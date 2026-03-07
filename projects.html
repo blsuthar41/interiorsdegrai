@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Arcmax Interiors Projects – View our completed interior execution projects across Ahmedabad and Gujarat." />
+  <title>Our Projects | Arcmax Interiors</title>
+  <link rel="icon" href="images/logo.png" type="image/png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .projects-grid-full {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 10px;
+    }
+    .project-card { transition: opacity 0.4s ease; }
+    @media(max-width:768px) { .projects-grid-full { grid-template-columns: repeat(2, 1fr); } }
+    @media(max-width:480px) { .projects-grid-full { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<nav id="navbar">
+  <a href="index.html" class="nav-logo"><img src="images/logo.png" alt="Arcmax Interiors Logo" /></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="projects.html" class="active">Projects</a></li>
+    <li><a href="contact.html" class="nav-cta"><i class="fas fa-file-invoice"></i> Get Estimate</a></li>
+  </ul>
+  <button class="nav-toggle"><i class="fas fa-bars"></i></button>
+</nav>
+
+<div class="page-hero">
+  <div class="page-hero-content">
+    <div class="breadcrumb">
+      <a href="index.html"><i class="fas fa-home"></i> Home</a>
+      <i class="fas fa-chevron-right"></i>
+      <span>Projects</span>
+    </div>
+    <h1><i class="fas fa-images" style="color:#845C01;margin-right:14px"></i>Our Projects</h1>
+    <p>55+ Completed Interior Execution Projects — Residential, Commercial & Hospitality</p>
+  </div>
+</div>
+
+<!-- PROJECTS SECTION -->
+<section class="section projects-section">
+  <div class="section-inner">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:20px;margin-bottom:0" class="reveal">
+      <div>
+        <span class="section-label"><i class="fas fa-th-large"></i> Portfolio</span>
+        <h2 class="section-title">Completed <span class="gold">Works</span></h2>
+      </div>
+      <div style="font-size:14px;color:#888"><i class="fas fa-info-circle" style="color:#845C01"></i> Click any image to view full size</div>
+    </div>
+
+    <!-- FILTER -->
+    <div class="projects-filter">
+      <button class="filter-btn active" data-cat="all"><i class="fas fa-th"></i> All Projects</button>
+      <button class="filter-btn" data-cat="joinery"><i class="fas fa-couch"></i> Joinery</button>
+      <button class="filter-btn" data-cat="glass"><i class="fas fa-border-all"></i> Glass & Aluminium</button>
+      <button class="filter-btn" data-cat="ceiling"><i class="fas fa-th-large"></i> False Ceiling</button>
+      <button class="filter-btn" data-cat="paint"><i class="fas fa-paint-roller"></i> Wall Paint</button>
+      <button class="filter-btn" data-cat="stone"><i class="fas fa-gem"></i> Stone & Corian</button>
+      <button class="filter-btn" data-cat="electric"><i class="fas fa-bolt"></i> Electric</button>
+      <button class="filter-btn" data-cat="metal"><i class="fas fa-industry"></i> Metal</button>
+    </div>
+
+    <div class="projects-grid-full">
+      <div class="project-card" data-cat="joinery">
+        <img src="images/project_1.jpg" alt="Luxury Villa Living Room" loading="lazy" />
+        <div class="project-overlay">
+          <p class="tag"><i class="fas fa-couch"></i> Joinery & Furniture</p>
+          <h3>Luxury Villa Living Room</h3>
+          <p><i class="fas fa-map-marker-alt"></i> Ahmedabad, Gujarat</p>
+        </div>
+      </div>
+      <div class="project-card" data-cat="ceiling">
+        <img src="images/project_2.jpg" alt="Corporate Office" loading="lazy" />
+        <div class="project-overlay">
+          <p class="tag"><i class="fas fa-th-large"></i> False Ceiling</p>
+          <h3>Corporate Office Interior</h3>
+          <p><i class="fas fa-map-marker-alt"></i> Ahmedabad, Gujarat</p>
+        </div>
+      </div>
+      <div class="project-card" data-cat="stone">
+        <img src="images/project_3.jpg" alt="Modern Kitchen" loading="lazy" />
+        <div class="project-overlay">
+          <p class="tag"><i class="fas fa-gem"></i> Stone & Corian</p>
+          <h3>Modern Kitchen Countertops</h3>
+          <p><i class="fas fa-map-marker-alt"></i> Ahmedabad, Gujarat</p>
+        </div>
+      </div>
+      <div class="project-card" data-cat="ceiling">
+        <img src="images/project_4.jpg" alt="Hotel Lobby" loading="lazy" />
+        <div class="project-overlay">
+          <p class="tag"><i class="fas fa-hotel"></i> False Ceiling & Lighting</p>
+          <h3>Hotel Lobby Design</h3>
+          <p><i class="fas fa-map-marker-alt"></i> Ahmedabad, Gujarat</p>
+        </div>
+      </div>
+      <div class="project-card" data-cat="paint">
+        <img src="images/project_5.jpg" alt="Residential Bedroom" loading="lazy" />
+        <div class="project-overlay">
+          <p class="tag"><i class="fas fa-paint-roller"></i> Wall Paint</p>
+          <h3>Luxury Residential Bedroom</h3>
+          <p><i class="fas fa-map-marker-alt"></i> Ahmedabad, Gujarat</p>
+        </div>
+      </div>
+      <div class="project-card" data-cat="joinery">
+        <img src="images/project_6.jpg" alt="Restaurant Interior" loading="lazy" />
+        <div class="project-overlay">
+          <p class="tag"><i class="fas fa-scroll"></i> Upholstery & Joinery</p>
+          <h3>Restaurant Interior</h3>
+          <p><i class="fas fa-map-marker-alt"></i> Ahmedabad, Gujarat</p>
+        </div>
+      </div>
+      <div class="project-card" data-cat="metal">
+        <img src="images/project_7.jpg" alt="Showroom Design" loading="lazy" />
+        <div class="project-overlay">
+          <p class="tag"><i class="fas fa-industry"></i> Metal Work</p>
+          <h3>Retail Showroom</h3>
+          <p><i class="fas fa-map-marker-alt"></i> Ahmedabad, Gujarat</p>
+        </div>
+      </div>
+      <div class="project-card" data-cat="electric">
+        <img src="images/project_8.jpg" alt="Apartment Interior" loading="lazy" />
+        <div class="project-overlay">
+          <p class="tag"><i class="fas fa-bolt"></i> Electric & Lighting</p>
+          <h3>Premium Apartment</h3>
+          <p><i class="fas fa-map-marker-alt"></i> Ahmedabad, Gujarat</p>
+        </div>
+      </div>
+      <div class="project-card" data-cat="glass">
+        <img src="images/project_9.jpg" alt="Commercial Space" loading="lazy" />
+        <div class="project-overlay">
+          <p class="tag"><i class="fas fa-border-all"></i> Glass & Aluminium</p>
+          <h3>Commercial Office Space</h3>
+          <p><i class="fas fa-map-marker-alt"></i> Ahmedabad, Gujarat</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MORE PROJECTS NOTE -->
+    <div class="reveal" style="background:#f8f6f2;border:1px solid #e8e0d0;border-radius:4px;padding:32px;margin-top:44px;text-align:center">
+      <i class="fas fa-photo-video" style="font-size:32px;color:#845C01;margin-bottom:12px"></i>
+      <h3 style="font-size:20px;font-weight:600;color:#111;margin-bottom:8px">55+ Projects Completed</h3>
+      <p style="color:#888;font-size:15px;margin-bottom:20px">We have completed over 55 interior execution projects across Ahmedabad. Follow us on Instagram and YouTube for the latest project updates and behind-the-scenes content.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a href="https://instagram.com/interiorsdegrai" target="_blank" rel="noopener" class="btn-primary" style="background:#E1306C;border-color:#E1306C">
+          <i class="fab fa-instagram"></i> @interiorsdegrai
+        </a>
+        <a href="https://youtube.com/interiorsdegrai" target="_blank" rel="noopener" class="btn-primary" style="background:#FF0000;border-color:#FF0000">
+          <i class="fab fa-youtube"></i> YouTube Channel
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats-section">
+  <div class="stats-grid">
+    <div class="stat-item reveal"><i class="fas fa-hard-hat"></i><div class="num"><span data-target="55" data-suffix="+">55+</span></div><div class="label">Projects Done</div></div>
+    <div class="stat-item reveal"><i class="fas fa-home"></i><div class="num"><span data-target="20" data-suffix="+">20+</span></div><div class="label">Residential Projects</div></div>
+    <div class="stat-item reveal"><i class="fas fa-city"></i><div class="num"><span data-target="25" data-suffix="+">25+</span></div><div class="label">Commercial Projects</div></div>
+    <div class="stat-item reveal"><i class="fas fa-hotel"></i><div class="num"><span data-target="10" data-suffix="+">10+</span></div><div class="label">Hospitality Projects</div></div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <img src="images/logo.png" alt="Arcmax Interiors" /><div class="footer-brand-name">Arcmax Interiors</div><div class="footer-brand-sub">Interior Execution Specialists</div>
+        <p>Where Design Meets Flawless Execution. Based in Ahmedabad, Gujarat — serving projects across the region since 2020.</p>
+        <div class="social-links">
+          <a href="https://linkedin.com/company/interiorsdegrai" target="_blank" rel="noopener" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+          <a href="https://instagram.com/interiorsdegrai" target="_blank" rel="noopener" class="social-link"><i class="fab fa-instagram"></i></a>
+          <a href="https://facebook.com/interiorsdegrai" target="_blank" rel="noopener" class="social-link"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://youtube.com/interiorsdegrai" target="_blank" rel="noopener" class="social-link"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4><i class="fas fa-sitemap"></i> Navigation</h4>
+        <ul class="footer-links">
+          <li><a href="index.html"><i class="fas fa-chevron-right"></i> Home</a></li>
+          <li><a href="about.html"><i class="fas fa-chevron-right"></i> About Us</a></li>
+          <li><a href="services.html"><i class="fas fa-chevron-right"></i> Services</a></li>
+          <li><a href="projects.html"><i class="fas fa-chevron-right"></i> Projects</a></li>
+          <li><a href="contact.html"><i class="fas fa-chevron-right"></i> Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4><i class="fas fa-tools"></i> Services</h4>
+        <ul class="footer-links">
+          <li><a href="services.html#joinery"><i class="fas fa-chevron-right"></i> Joinery & Furniture</a></li>
+          <li><a href="services.html#glass"><i class="fas fa-chevron-right"></i> Glass & Aluminium</a></li>
+          <li><a href="services.html#ceiling"><i class="fas fa-chevron-right"></i> False Ceiling</a></li>
+          <li><a href="services.html#stone"><i class="fas fa-chevron-right"></i> Stone & Corian</a></li>
+          <li><a href="services.html#electric"><i class="fas fa-chevron-right"></i> Electric & Light</a></li>
+          <li><a href="services.html#metal"><i class="fas fa-chevron-right"></i> Metal Work</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4><i class="fas fa-address-card"></i> Contact Info</h4>
+        <div class="footer-contact-items">
+          <div class="footer-contact-item"><i class="fas fa-map-marker-alt"></i><span>Amraiwadi, Ahmedabad, Gujarat — 380038</span></div>
+          <div class="footer-contact-item"><i class="fas fa-phone-alt"></i><a href="tel:+919672255141">+91 96722 55141</a></div>
+          <div class="footer-contact-item"><i class="fas fa-envelope"></i><a href="mailto:info@interiorsdegrai.in">info@interiorsdegrai.in</a></div>
+          <div class="footer-contact-item"><i class="fab fa-whatsapp"></i><a href="https://wa.me/919672255141" target="_blank">Chat on WhatsApp</a></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 <span class="gold">Arcmax Interiors</span>. All Rights Reserved.</p>
+      <p><a href="mailto:info@interiorsdegrai.in" style="color:rgba(255,255,255,0.35);text-decoration:none">info@interiorsdegrai.in</a></p>
+    </div>
+  </div>
+</footer>
+
+<div class="float-buttons">
+  <a href="tel:+919672255141" class="float-btn call" title="Call Us"><i class="fas fa-phone-alt"></i></a>
+  <a href="https://wa.me/919672255141" class="float-btn whatsapp" target="_blank" rel="noopener" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+  <button class="float-btn back-top" style="opacity:0;pointer-events:none" title="Back to Top"><i class="fas fa-chevron-up"></i></button>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>
