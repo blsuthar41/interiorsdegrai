@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Our Work Process | Degrai Interiors – Ahmedabad</title>
+<meta name="description" content="Degrai Interiors – Premium interior execution specialists in Ahmedabad, Gujarat since 2020.">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
+<style>
+#process-main{background:#f6f4f1;padding:96px 0}
+.timeline{position:relative;max-width:900px;margin:60px auto 0;padding:0 20px}
+.timeline::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,transparent,#845C01 10%,#845C01 90%,transparent);transform:translateX(-50%)}
+.timeline-item{width:50%;padding:0 50px 48px;position:relative}
+.timeline-left{left:0;text-align:right}
+.timeline-right{left:50%;text-align:left}
+.tl-content{background:#fff;border:1px solid #e4ddd4;padding:28px 26px;position:relative;transition:border-color .3s,box-shadow .3s}
+.tl-content:hover{border-color:#845C01;box-shadow:0 6px 24px rgba(0,0,0,.06)}
+.tl-content::before{content:'';position:absolute;top:28px;width:0;height:0;border:8px solid transparent}
+.timeline-left .tl-content::before{right:-16px;border-left-color:#845C01}
+.timeline-right .tl-content::before{left:-16px;border-right-color:#845C01}
+.tl-num{
+  position:absolute;top:22px;
+  width:44px;height:44px;background:#845C01;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:16px;border-radius:50%;
+  z-index:1;
+}
+.timeline-left .tl-num{right:-72px}
+.timeline-right .tl-num{left:-72px}
+.tl-step-num{font-size:9px;color:#845C01;letter-spacing:3px;margin-bottom:8px;font-weight:700}
+.tl-title{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px}
+.tl-desc{font-size:12px;color:#888;line-height:1.8}
+#process-docs{background:#1a1610;padding:80px 0}
+.docs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(132,92,1,.2);margin-top:52px}
+.doc-card{background:#0f0e0b;padding:32px 24px;transition:background .3s}
+.doc-card:hover{background:#1a1610}
+.doc-icon{font-size:28px;color:#845C01;margin-bottom:16px}
+.doc-t{font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+.doc-d{font-size:11px;color:rgba(255,255,255,.32);line-height:1.75}
+@media(max-width:768px){
+  .timeline::before{left:22px}
+  .timeline-item{width:100%;left:0!important;text-align:left;padding:0 20px 40px 72px}
+  .tl-content::before{display:none}
+  .timeline-left .tl-num,.timeline-right .tl-num{left:-50px;right:auto}
+  .docs-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){.docs-grid{grid-template-columns:1fr}}
+</style>
+</head><body>
+<nav id="navbar">
+  <a href="index.html" class="logo"><div class="logo-mark"><i class="fa-solid fa-layer-group"></i></div><div class="logo-text"><span class="logo-name">Degrai</span><span class="logo-sub">Interiors</span></div></a>
+  <nav class="nav-menu">
+    <div class="nav-item"><a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> Home</a></div>
+    <div class="nav-item"><a href="about.html" class="nav-link"><i class="fa-solid fa-building"></i> About</a></div>
+    <div class="nav-item">
+      <button class="nav-link"><i class="fa-solid fa-wrench"></i> Services <i class="fa-solid fa-chevron-down"></i></button>
+      <div class="dropdown">
+        <a href="services.html#joinery"><i class="fa-solid fa-hammer"></i> Joinery &amp; Furniture</a>
+        <a href="services.html#glass"><i class="fa-solid fa-border-all"></i> Glass &amp; Aluminium</a>
+        <a href="services.html#ceiling"><i class="fa-solid fa-layer-group"></i> False Ceiling</a>
+        <a href="services.html#paint"><i class="fa-solid fa-paintbrush"></i> Wall Paint</a>
+        <a href="services.html#upholstery"><i class="fa-solid fa-couch"></i> Upholstery &amp; Curtains</a>
+        <a href="services.html#stone"><i class="fa-solid fa-mountain-sun"></i> Stone &amp; Corian</a>
+        <a href="services.html#electric"><i class="fa-solid fa-bolt"></i> Electric &amp; Light</a>
+        <a href="services.html#metal"><i class="fa-solid fa-gear"></i> Metal Work</a>
+      </div>
+    </div>
+    <div class="nav-item"><a href="process.html" class="nav-link  active"><i class="fa-solid fa-timeline"></i> Process</a></div>
+    <div class="nav-item"><a href="portfolio.html" class="nav-link"><i class="fa-solid fa-images"></i> Portfolio</a></div>
+    <div class="nav-item"><a href="contact.html" class="nav-link"><i class="fa-solid fa-envelope"></i> Contact</a></div>
+    <a href="#" onclick="openEstimate(event)" class="nav-link nav-cta"><i class="fa-solid fa-file-invoice"></i> Get Estimate</a>
+  </nav>
+  <button class="hamburger" onclick="toggleMobileNav()"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-nav" id="mobileNav">
+  <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+  <a href="about.html"><i class="fa-solid fa-building"></i> About Us</a>
+  <a href="services.html"><i class="fa-solid fa-wrench"></i> Services</a>
+  <a href="process.html"><i class="fa-solid fa-timeline"></i> Our Process</a>
+  <a href="portfolio.html"><i class="fa-solid fa-images"></i> Portfolio</a>
+  <a href="contact.html"><i class="fa-solid fa-envelope"></i> Contact</a>
+  <a href="#" onclick="openEstimate(event)"><i class="fa-solid fa-file-invoice"></i> Get Estimate</a>
+</div><div class="page-hero">
+  <div class="page-hero-bg"></div><div class="page-hero-grid"></div>
+  <div class="page-hero-content">
+    <div class="breadcrumb"><a href="index.html"><i class="fa-solid fa-house"></i> Home</a><i class="fa-solid fa-chevron-right"></i><span class="current">Our Process</span></div>
+    <div class="sec-label" style="color:#845C01"><i class="fa-solid fa-timeline"></i>&nbsp; Work Process</div>
+    <h1 class="page-hero-title">Our Work<br><span>Process</span></h1>
+    <p class="page-hero-sub">From First Site Visit to Final Handover — 10 Clear Steps</p>
+  </div>
+</div>
+<section id="process-main"><div class="container">
+  <div style="text-align:center;max-width:620px;margin:0 auto" class="aos">
+    <div class="sec-label" style="justify-content:center"><i class="fa-solid fa-route"></i>&nbsp; Step by Step</div>
+    <h2 class="sec-title">How Every Project<br>Gets Done</h2>
+    <p class="sec-sub">A structured, transparent workflow that guarantees quality, documentation, and on-time delivery for every project we undertake.</p>
+  </div>
+  <div class="timeline"><div class="timeline-item timeline-left aos">
+  <div class="tl-content">
+    <div class="tl-num"><i class="fa-solid fa-magnifying-glass"></i></div>
+    <div class="tl-step-num">01</div>
+    <h3 class="tl-title">Site Visit & Assessment</h3>
+    <p class="tl-desc">Our project manager visits the site with the main contractor to understand the full scope, existing conditions, and measurements. We document everything before preparing any estimate.</p>
+  </div>
+</div><div class="timeline-item timeline-right aos">
+  <div class="tl-content">
+    <div class="tl-num"><i class="fa-solid fa-file-alt"></i></div>
+    <div class="tl-step-num">02</div>
+    <h3 class="tl-title">Estimation & Proposal</h3>
+    <p class="tl-desc">We prepare a detailed itemized estimate covering all trades, materials, quantities, unit rates, and timelines. Transparent pricing with no hidden costs.</p>
+  </div>
+</div><div class="timeline-item timeline-left aos">
+  <div class="tl-content">
+    <div class="tl-num"><i class="fa-solid fa-handshake"></i></div>
+    <div class="tl-step-num">03</div>
+    <h3 class="tl-title">Contract Negotiation</h3>
+    <p class="tl-desc">We review and negotiate terms with the main contractor, ensuring mutual clarity on scope, exclusions, timelines, and payment terms before any commitment.</p>
+  </div>
+</div><div class="timeline-item timeline-right aos">
+  <div class="tl-content">
+    <div class="tl-num"><i class="fa-solid fa-file-signature"></i></div>
+    <div class="tl-step-num">04</div>
+    <h3 class="tl-title">Contract & LPO Signing</h3>
+    <p class="tl-desc">Formal sub-contract agreement and Local Purchase Order (LPO) are executed before any work begins. Complete documentation from day one.</p>
+  </div>
+</div><div class="timeline-item timeline-left aos">
+  <div class="tl-content">
+    <div class="tl-num"><i class="fa-solid fa-truck"></i></div>
+    <div class="tl-step-num">05</div>
+    <h3 class="tl-title">Material Procurement</h3>
+    <p class="tl-desc">We source all approved materials from reliable vendors, with quality checks, proper documentation, and delivery schedules aligned to the project timeline.</p>
+  </div>
+</div><div class="timeline-item timeline-right aos">
+  <div class="tl-content">
+    <div class="tl-num"><i class="fa-solid fa-hard-hat"></i></div>
+    <div class="tl-step-num">06</div>
+    <h3 class="tl-title">Execution on Site</h3>
+    <p class="tl-desc">Our skilled tradesmen execute all works per approved drawings, specifications, and the main contractor's instructions. Daily progress updates are shared.</p>
+  </div>
+</div><div class="timeline-item timeline-left aos">
+  <div class="tl-content">
+    <div class="tl-num"><i class="fa-solid fa-clipboard-check"></i></div>
+    <div class="tl-step-num">07</div>
+    <h3 class="tl-title">Quality Inspection</h3>
+    <p class="tl-desc">Multi-stage quality checks at each phase of work. Our site supervisors inspect every element before proceeding to the next stage — zero-defect policy.</p>
+  </div>
+</div><div class="timeline-item timeline-right aos">
+  <div class="tl-content">
+    <div class="tl-num"><i class="fa-solid fa-tools"></i></div>
+    <div class="tl-step-num">08</div>
+    <h3 class="tl-title">Snag Clearance</h3>
+    <p class="tl-desc">After main execution, a comprehensive snag list is prepared and all items are resolved before calling for final inspection. Nothing is left pending.</p>
+  </div>
+</div><div class="timeline-item timeline-left aos">
+  <div class="tl-content">
+    <div class="tl-num"><i class="fa-solid fa-file-invoice"></i></div>
+    <div class="tl-step-num">09</div>
+    <h3 class="tl-title">Invoice Submission</h3>
+    <p class="tl-desc">Tax invoice submitted with complete supporting documents — delivery notes, work completion certificates, and GST breakdown for seamless processing.</p>
+  </div>
+</div><div class="timeline-item timeline-right aos">
+  <div class="tl-content">
+    <div class="tl-num"><i class="fa-solid fa-flag-checkered"></i></div>
+    <div class="tl-step-num">10</div>
+    <h3 class="tl-title">Project Handover</h3>
+    <p class="tl-desc">Final walkthrough with the main contractor, documentation handover, and formal sign-off. Complete project archive handed to client.</p>
+  </div>
+</div></div>
+</div></section>
+
+<section id="process-docs"><div class="container">
+  <div style="text-align:center;max-width:580px;margin:0 auto" class="aos">
+    <div class="sec-label" style="justify-content:center;color:#845C01"><i class="fa-solid fa-file-lines"></i>&nbsp; Documentation</div>
+    <h2 class="sec-title" style="color:#fff">Every Project,<br>Fully Documented</h2>
+  </div>
+  <div class="docs-grid">
+    <div class="doc-card aos"><div class="doc-icon"><i class="fa-solid fa-file-alt"></i></div><div class="doc-t">Quotation</div><div class="doc-d">Itemized cost breakdown with unit rates, quantities, and payment terms.</div></div>
+    <div class="doc-card aos delay-1"><div class="doc-icon"><i class="fa-solid fa-file-signature"></i></div><div class="doc-t">Contract</div><div class="doc-d">Formal sub-contract with scope, terms, timelines, and signatures.</div></div>
+    <div class="doc-card aos delay-2"><div class="doc-icon"><i class="fa-solid fa-truck"></i></div><div class="doc-t">LPO</div><div class="doc-d">Local Purchase Order issued before material procurement begins.</div></div>
+    <div class="doc-card aos delay-3"><div class="doc-icon"><i class="fa-solid fa-receipt"></i></div><div class="doc-t">Delivery Note</div><div class="doc-d">Material delivery records signed and acknowledged on site.</div></div>
+    <div class="doc-card aos"><div class="doc-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div><div class="doc-t">Tax Invoice</div><div class="doc-d">GST-compliant tax invoices with CGST/SGST breakdown.</div></div>
+    <div class="doc-card aos delay-1"><div class="doc-icon"><i class="fa-solid fa-clipboard-check"></i></div><div class="doc-t">Snag List</div><div class="doc-d">Documented snag register cleared before handover.</div></div>
+    <div class="doc-card aos delay-2"><div class="doc-icon"><i class="fa-solid fa-stamp"></i></div><div class="doc-t">Completion Certificate</div><div class="doc-d">Formal work completion certificate signed by main contractor.</div></div>
+    <div class="doc-card aos delay-3"><div class="doc-icon"><i class="fa-solid fa-folder-open"></i></div><div class="doc-t">Project Archive</div><div class="doc-d">Full project documentation archive handed over at project close.</div></div>
+  </div>
+</div></section>
+<footer>
+  <div class="foot-wrap">
+    <div class="foot-grid">
+      <div><div class="foot-logo-wrap"><a href="index.html" class="logo"><div class="logo-mark"><i class="fa-solid fa-layer-group"></i></div><div class="logo-text"><span class="logo-name">Degrai</span><span class="logo-sub">Interiors</span></div></a></div><p class="foot-desc">Where Design Meets Flawless Execution. Premium interior execution specialists and trusted sub-contractors across Ahmedabad &amp; Gujarat since 2020.</p><div class="social-row"><a href="https://linkedin.com/company/interiorsdegrai" target="_blank" class="soc-btn"><i class="fa-brands fa-linkedin-in"></i></a><a href="https://instagram.com/interiorsdegrai" target="_blank" class="soc-btn"><i class="fa-brands fa-instagram"></i></a><a href="https://facebook.com/interiorsdegrai" target="_blank" class="soc-btn"><i class="fa-brands fa-facebook-f"></i></a><a href="https://youtube.com/interiorsdegrai" target="_blank" class="soc-btn"><i class="fa-brands fa-youtube"></i></a></div></div>
+      <div><div class="foot-h"><i class="fa-solid fa-compass"></i> Navigation</div><ul class="foot-links"><li><a href="index.html"><i class="fa-solid fa-chevron-right"></i> Home</a></li><li><a href="about.html"><i class="fa-solid fa-chevron-right"></i> About Us</a></li><li><a href="services.html"><i class="fa-solid fa-chevron-right"></i> Services</a></li><li><a href="process.html"><i class="fa-solid fa-chevron-right"></i> Work Process</a></li><li><a href="portfolio.html"><i class="fa-solid fa-chevron-right"></i> Portfolio</a></li><li><a href="contact.html"><i class="fa-solid fa-chevron-right"></i> Contact</a></li></ul></div>
+      <div><div class="foot-h"><i class="fa-solid fa-wrench"></i> Services</div><ul class="foot-links"><li><a href="services.html#joinery"><i class="fa-solid fa-chevron-right"></i> Joinery &amp; Furniture</a></li><li><a href="services.html#glass"><i class="fa-solid fa-chevron-right"></i> Glass &amp; Aluminium</a></li><li><a href="services.html#ceiling"><i class="fa-solid fa-chevron-right"></i> False Ceiling</a></li><li><a href="services.html#paint"><i class="fa-solid fa-chevron-right"></i> Wall Paint</a></li><li><a href="services.html#stone"><i class="fa-solid fa-chevron-right"></i> Stone &amp; Corian</a></li><li><a href="services.html#electric"><i class="fa-solid fa-chevron-right"></i> Electric &amp; Light</a></li><li><a href="services.html#metal"><i class="fa-solid fa-chevron-right"></i> Metal Work</a></li></ul></div>
+      <div><div class="foot-h"><i class="fa-solid fa-address-book"></i> Contact</div><div class="foot-contact-item"><i class="fa-solid fa-location-dot"></i><div>Amraiwadi, Ahmedabad<br>Gujarat &#8211; 380038</div></div><div class="foot-contact-item"><i class="fa-solid fa-envelope"></i><div><a href="mailto:info@interiorsdegrai.in">info@interiorsdegrai.in</a></div></div><div class="foot-contact-item"><i class="fa-solid fa-globe"></i><div><a href="https://interiorsdegrai.in">interiorsdegrai.in</a></div></div><div class="foot-contact-item"><i class="fa-solid fa-calendar-check"></i><div>Est. 2020 | 55+ Projects</div></div></div>
+    </div>
+    <div class="foot-bottom"><span class="foot-copy"><i class="fa-regular fa-copyright"></i> 2025 Degrai Interiors. All Rights Reserved.</span><span class="foot-tagline"><i class="fa-solid fa-diamond"></i> Where Design Meets Flawless Execution</span></div>
+  </div>
+</footer>
+<div class="float-wrap">
+  <a href="tel:+919876543210" class="float-btn float-call" title="Call"><i class="fa-solid fa-phone"></i></a>
+  <a href="https://wa.me/919876543210" target="_blank" class="float-btn float-wa" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+</div>
+<div class="modal-wrap" id="estimateModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeEstimate()"><i class="fa-solid fa-xmark"></i></button>
+    <div class="sec-label" style="margin-bottom:12px"><i class="fa-solid fa-file-invoice"></i>&nbsp; Get Free Estimate</div>
+    <h3 style="color:#fff;font-size:19px;text-transform:uppercase;letter-spacing:2px;margin-bottom:26px">Request a Quote</h3>
+    <form onsubmit="submitEstimate(event)">
+      <div class="frow2"><div class="fg"><label><i class="fa-solid fa-user"></i> Name *</label><input type="text" name="name" placeholder="Full Name" required></div><div class="fg"><label><i class="fa-solid fa-phone"></i> Phone *</label><input type="tel" name="phone" placeholder="+91 00000 00000" required></div></div>
+      <div class="fg"><label><i class="fa-solid fa-envelope"></i> Email</label><input type="email" name="email" placeholder="you@email.com"></div>
+      <div class="fg"><label><i class="fa-solid fa-building"></i> Company</label><input type="text" name="company" placeholder="Company / Contractor Name"></div>
+      <div class="fg"><label><i class="fa-solid fa-list"></i> Service</label><select name="service"><option value="">Select Service</option><option>Joinery / Furniture Work</option><option>Glass &amp; Aluminium Work</option><option>False Ceiling</option><option>Wall Paint</option><option>Upholstery &amp; Curtains</option><option>Stone &amp; Corian</option><option>Electric &amp; Light Work</option><option>Metal Work</option><option>Multiple / All Services</option></select></div>
+      <div class="fg"><label><i class="fa-solid fa-comment"></i> Project Details</label><textarea name="msg" placeholder="Describe your project..."></textarea></div>
+      <button type="submit" class="btn btn-gold" style="width:100%;justify-content:center"><i class="fa-solid fa-paper-plane"></i>&nbsp; Send Enquiry</button>
+    </form>
+  </div>
+</div>
+<script src="js/main.js"></script></body></html>
