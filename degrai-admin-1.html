@@ -1,0 +1,2456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Degrai Interiors – Admin Panel</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Futura:wght@300;400;500;700&display=swap');
+
+/* Futura fallback stack */
+* { font-family: 'Futura', 'Century Gothic', 'Trebuchet MS', 'Gill Sans', sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --gold: #845C01;
+  --gold-light: #a97402;
+  --gold-pale: #f5e9cc;
+  --gray: #545454;
+  --gray-light: #888;
+  --gray-pale: #f4f4f4;
+  --white: #fff;
+  --sidebar-w: 260px;
+  --danger: #c0392b;
+  --success: #27ae60;
+  --info: #2980b9;
+  --warn: #e67e22;
+}
+
+html, body { height: 100%; background: #f0ede8; color: var(--gray); }
+
+/* ─── SIDEBAR ─── */
+#sidebar {
+  position: fixed; top: 0; left: 0; width: var(--sidebar-w); height: 100vh;
+  background: #1a1208; overflow-y: auto; z-index: 100;
+  display: flex; flex-direction: column;
+  border-right: 3px solid var(--gold);
+}
+.sidebar-logo {
+  padding: 24px 20px 18px;
+  border-bottom: 1px solid rgba(132,92,1,0.3);
+  display: flex; align-items: center; gap: 12px;
+}
+.logo-icon {
+  width: 48px; height: 48px; background: var(--gold);
+  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -1px; flex-shrink: 0;
+}
+.logo-text { line-height: 1.2; }
+.logo-text .brand { font-size: 15px; font-weight: 700; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; }
+.logo-text .sub { font-size: 10px; color: rgba(255,255,255,0.45); letter-spacing: 2px; text-transform: uppercase; }
+.nav-section { padding: 8px 0; }
+.nav-label { font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(255,255,255,0.3); padding: 14px 20px 6px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 20px; cursor: pointer;
+  color: rgba(255,255,255,0.6); font-size: 13px; letter-spacing: 0.3px; transition: all 0.2s;
+  border-left: 3px solid transparent; user-select: none;
+}
+.nav-item:hover { background: rgba(132,92,1,0.15); color: #fff; border-left-color: rgba(132,92,1,0.5); }
+.nav-item.active { background: rgba(132,92,1,0.25); color: var(--gold); border-left-color: var(--gold); font-weight: 600; }
+.nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+.sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid rgba(132,92,1,0.2); }
+.sidebar-footer p { font-size: 10px; color: rgba(255,255,255,0.25); letter-spacing: 0.5px; }
+
+/* ─── MAIN ─── */
+#main { margin-left: var(--sidebar-w); min-height: 100vh; }
+.topbar {
+  background: #fff; border-bottom: 2px solid var(--gold-pale); padding: 0 32px;
+  height: 60px; display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.topbar-title { font-size: 18px; font-weight: 700; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.topbar-badge { background: var(--gold); color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+.topbar-user { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--gray); }
+.page { padding: 28px 32px; display: none; }
+.page.active { display: block; }
+
+/* ─── CARDS / GRID ─── */
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.page-header h2 { font-size: 20px; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.stat-card {
+  background: #fff; border-radius: 10px; padding: 20px; border-left: 4px solid var(--gold);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.stat-card.danger { border-left-color: var(--danger); }
+.stat-card.success { border-left-color: var(--success); }
+.stat-card.info { border-left-color: var(--info); }
+.stat-card.warn { border-left-color: var(--warn); }
+.stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--gray-light); margin-bottom: 8px; }
+.stat-value { font-size: 28px; font-weight: 700; color: var(--gray); }
+.stat-value span { font-size: 14px; color: var(--gray-light); }
+.stat-sub { font-size: 11px; color: var(--gray-light); margin-top: 4px; }
+
+/* ─── TABLE ─── */
+.table-wrap { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+.table-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #f0ede8; }
+.table-head h3 { font-size: 14px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; }
+table { width: 100%; border-collapse: collapse; }
+th { background: var(--gold); color: #fff; padding: 10px 14px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #f5f0e8; }
+tr:hover td { background: #faf7f0; }
+tr:last-child td { border-bottom: none; }
+.badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+.badge-active { background: #e6f7ed; color: var(--success); }
+.badge-pending { background: #fef5e7; color: var(--warn); }
+.badge-done { background: #e8f4fd; color: var(--info); }
+.badge-draft { background: #f5f5f5; color: var(--gray-light); }
+.badge-cancel { background: #fdecea; color: var(--danger); }
+
+/* ─── BUTTONS ─── */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; transition: all 0.15s; text-transform: uppercase; }
+.btn-primary { background: var(--gold); color: #fff; }
+.btn-primary:hover { background: var(--gold-light); }
+.btn-secondary { background: var(--gray-pale); color: var(--gray); border: 1px solid #ddd; }
+.btn-secondary:hover { background: #e8e4de; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: #a93226; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: #219a52; }
+.btn-info { background: var(--info); color: #fff; }
+.btn-sm { padding: 5px 12px; font-size: 11px; }
+.btn-icon { padding: 6px 8px; }
+
+/* ─── FORMS ─── */
+.form-section { background: #fff; border-radius: 10px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.form-section h3 { font-size: 13px; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--gold-pale); }
+.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-light); font-weight: 600; }
+.form-group input, .form-group select, .form-group textarea {
+  padding: 9px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; color: var(--gray);
+  transition: border-color 0.15s; background: #fafafa; font-family: inherit;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline: none; border-color: var(--gold); background: #fff;
+}
+.form-group textarea { resize: vertical; min-height: 70px; }
+.form-actions { display: flex; gap: 10px; padding-top: 10px; }
+
+/* ─── ITEMS TABLE (Quotation etc) ─── */
+.items-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.items-table th { background: #f5e9cc; color: var(--gold); padding: 8px 10px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; }
+.items-table td { padding: 7px 8px; border-bottom: 1px solid #f0ede8; }
+.items-table input, .items-table select { width: 100%; padding: 5px 7px; border: 1px solid #e0d8ca; border-radius: 4px; font-size: 12px; font-family: inherit; background: #fafaf7; }
+.items-table input:focus, .items-table select:focus { outline: none; border-color: var(--gold); }
+.items-table .amount-col { font-weight: 700; color: var(--gold); text-align: right; }
+.items-total-row td { background: #f5e9cc; font-weight: 700; color: var(--gold); }
+.add-row-btn { margin-top: 10px; }
+
+/* ─── MODAL ─── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000;
+  display: none; align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: #fff; border-radius: 12px; width: 90%; max-width: 900px; max-height: 90vh;
+  overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px; border-bottom: 2px solid var(--gold-pale);
+  position: sticky; top: 0; background: #fff; z-index: 1;
+}
+.modal-header h2 { font-size: 16px; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
+.modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--gray-light); padding: 4px 8px; }
+.modal-body { padding: 24px; }
+.modal-footer { display: flex; gap: 10px; justify-content: flex-end; padding: 16px 24px; border-top: 1px solid #f0ede8; position: sticky; bottom: 0; background: #fff; }
+
+/* ─── PROGRESS BARS ─── */
+.progress-bar { height: 8px; background: #e0d8ca; border-radius: 4px; overflow: hidden; margin-top: 4px; }
+.progress-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.4s; }
+.progress-fill.success { background: var(--success); }
+.progress-fill.warn { background: var(--warn); }
+.progress-fill.danger { background: var(--danger); }
+
+/* ─── TABS ─── */
+.tabs { display: flex; gap: 2px; background: #f0ede8; border-radius: 8px; padding: 4px; margin-bottom: 20px; }
+.tab-btn { padding: 8px 18px; border: none; background: none; cursor: pointer; border-radius: 6px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-light); transition: all 0.15s; }
+.tab-btn.active { background: var(--gold); color: #fff; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ─── TIMELINE ─── */
+.timeline { padding: 0 0 0 20px; border-left: 2px solid var(--gold-pale); }
+.tl-item { position: relative; padding: 0 0 20px 20px; }
+.tl-item::before { content: ''; position: absolute; left: -8px; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--gold); border: 2px solid #fff; box-shadow: 0 0 0 2px var(--gold-pale); }
+.tl-date { font-size: 10px; color: var(--gray-light); letter-spacing: 0.5px; margin-bottom: 4px; }
+.tl-text { font-size: 13px; }
+
+/* ─── PRINT PREVIEW ─── */
+.pdf-preview { background: #fff; padding: 32px; font-size: 12px; max-width: 800px; margin: 0 auto; border: 1px solid #ddd; }
+.pdf-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 3px solid var(--gold); }
+.pdf-footer { margin-top: 20px; padding-top: 12px; border-top: 2px solid var(--gold-pale); font-size: 10px; color: var(--gray-light); text-align: center; }
+.pdf-doc-title { font-size: 22px; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+
+/* ─── NOTIFICATIONS ─── */
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast { padding: 12px 20px; background: #222; color: #fff; border-radius: 8px; font-size: 13px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); animation: slideIn 0.3s ease; display: flex; align-items: center; gap: 10px; }
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+@keyframes slideIn { from { transform: translateX(60px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* ─── MISC ─── */
+.section-divider { margin: 20px 0; border: none; border-top: 1px solid #e8e0d0; }
+.text-gold { color: var(--gold); }
+.text-muted { color: var(--gray-light); font-size: 12px; }
+.flex { display: flex; }
+.flex-center { display: flex; align-items: center; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.mt-2 { margin-top: 8px; }
+.mb-3 { margin-bottom: 12px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+@media(max-width:900px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+input[type=number] { -moz-appearance: textfield; }
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+.no-data { text-align: center; padding: 40px; color: var(--gray-light); font-size: 13px; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 13px; }
+
+/* ─── PASSWORD LOCK SCREEN ─── */
+#lock-screen {
+  position: fixed; inset: 0; z-index: 99999;
+  background: #1a1208;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+}
+#lock-screen.hidden { display: none; }
+.lock-card {
+  background: #231a0a; border: 1px solid rgba(132,92,1,0.4);
+  border-radius: 16px; padding: 48px 40px; width: 90%; max-width: 400px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+}
+.lock-logo { width: 72px; height: 72px; background: var(--gold); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 900; color: #fff; letter-spacing: -2px; margin-bottom: 20px; }
+.lock-title { font-size: 22px; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+.lock-sub { font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 32px; }
+.lock-field { width: 100%; position: relative; margin-bottom: 16px; }
+.lock-field input {
+  width: 100%; padding: 14px 44px 14px 16px; background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(132,92,1,0.35); border-radius: 8px; color: #fff;
+  font-size: 15px; font-family: inherit; letter-spacing: 0.5px;
+  transition: border-color 0.2s;
+}
+.lock-field input:focus { outline: none; border-color: var(--gold); background: rgba(132,92,1,0.1); }
+.lock-field input::placeholder { color: rgba(255,255,255,0.3); }
+.lock-eye {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  cursor: pointer; font-size: 18px; color: rgba(255,255,255,0.4); user-select: none;
+  transition: color 0.2s;
+}
+.lock-eye:hover { color: var(--gold); }
+.lock-btn {
+  width: 100%; padding: 14px; background: var(--gold); border: none; border-radius: 8px;
+  color: #fff; font-size: 14px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 2px; cursor: pointer; transition: background 0.2s; font-family: inherit;
+  margin-top: 4px;
+}
+.lock-btn:hover { background: var(--gold-light); }
+.lock-btn:active { transform: scale(0.98); }
+.lock-error { color: #e74c3c; font-size: 12px; margin-top: 8px; text-align: center; min-height: 16px; }
+.lock-footer { margin-top: 32px; font-size: 10px; color: rgba(255,255,255,0.2); text-align: center; letter-spacing: 1px; }
+.lock-dots { display: flex; gap: 6px; justify-content: center; margin: 20px 0 8px; }
+.lock-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(132,92,1,0.3); transition: background 0.2s; }
+.lock-dot.filled { background: var(--gold); }
+
+/* ─── HAMBURGER / MOBILE ─── */
+#hamburger {
+  display: none; background: none; border: none; cursor: pointer;
+  padding: 8px; flex-direction: column; gap: 5px; z-index: 200;
+}
+#hamburger span { display: block; width: 22px; height: 2px; background: var(--gold); border-radius: 2px; transition: all 0.3s; }
+#hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+#hamburger.open span:nth-child(2) { opacity: 0; }
+#hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+#sidebar-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 99; backdrop-filter: blur(2px);
+}
+#sidebar-overlay.open { display: block; }
+
+/* ─── LOGOUT BUTTON ─── */
+.logout-btn {
+  background: rgba(192,57,43,0.15); border: 1px solid rgba(192,57,43,0.3);
+  color: #e74c3c; padding: 6px 14px; border-radius: 6px; font-size: 11px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+  font-family: inherit; transition: all 0.2s;
+}
+.logout-btn:hover { background: rgba(192,57,43,0.3); }
+
+/* ─── MOBILE RESPONSIVE ─── */
+@media (max-width: 768px) {
+  :root { --sidebar-w: 260px; }
+
+  #hamburger { display: flex; }
+
+  #sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 100;
+  }
+  #sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.4);
+  }
+
+  #main { margin-left: 0 !important; }
+
+  .topbar { padding: 0 16px; }
+  .topbar-title { font-size: 14px; }
+  .topbar-badge { display: none; }
+  .topbar-user .avatar { width: 30px; height: 30px; font-size: 11px; }
+  .topbar-user span { display: none; }
+
+  .page { padding: 16px; }
+  .page-header { flex-wrap: wrap; gap: 10px; }
+  .page-header h2 { font-size: 15px; }
+  .page-header .flex { flex-wrap: wrap; }
+
+  .cards-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card { padding: 14px; }
+  .stat-value { font-size: 22px; }
+
+  .two-col, .three-col { grid-template-columns: 1fr; }
+
+  .form-section { padding: 16px; }
+  .form-row { grid-template-columns: 1fr; }
+
+  /* Tables scroll on mobile */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 600px; }
+  td, th { padding: 8px 10px; font-size: 12px; }
+
+  /* Items tables - horizontal scroll */
+  .items-table { min-width: 700px; }
+
+  .modal { width: 95%; max-width: 95vw; margin: 10px; }
+  .modal-body { padding: 16px; }
+  .modal-header { padding: 14px 16px; }
+  .modal-footer { padding: 12px 16px; flex-wrap: wrap; }
+
+  .btn { padding: 7px 12px; font-size: 11px; }
+  .btn-sm { padding: 5px 9px; font-size: 10px; }
+
+  .form-actions { flex-wrap: wrap; }
+  .form-actions .btn { flex: 1; min-width: 120px; justify-content: center; }
+
+  .topbar-right gap { gap: 8px; }
+
+  /* Lock screen */
+  .lock-card { padding: 36px 24px; }
+  .lock-title { font-size: 18px; }
+}
+
+@media (max-width: 480px) {
+  .cards-grid { grid-template-columns: 1fr; }
+  .page { padding: 12px; }
+  .topbar { height: 52px; }
+  .topbar-title { font-size: 13px; }
+  .lock-card { padding: 28px 18px; }
+}
+
+/* Prevent body scroll when sidebar open on mobile */
+body.sidebar-open { overflow: hidden; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ PASSWORD LOCK SCREEN ═══════════ -->
+<div id="lock-screen">
+  <div class="lock-card">
+    <div class="lock-logo">DI</div>
+    <div class="lock-title">Degrai Interiors</div>
+    <div class="lock-sub">Admin Panel · Secure Access</div>
+    <div class="lock-field">
+      <input type="password" id="lock-pwd" placeholder="Enter password" maxlength="32"
+        oninput="updateLockDots(this.value)"
+        onkeydown="if(event.key==='Enter')tryUnlock()" autocomplete="current-password" />
+      <span class="lock-eye" onclick="toggleLockEye()">👁️</span>
+    </div>
+    <div class="lock-dots" id="lock-dots">
+      <div class="lock-dot" id="ld-1"></div>
+      <div class="lock-dot" id="ld-2"></div>
+      <div class="lock-dot" id="ld-3"></div>
+      <div class="lock-dot" id="ld-4"></div>
+      <div class="lock-dot" id="ld-5"></div>
+      <div class="lock-dot" id="ld-6"></div>
+    </div>
+    <div class="lock-error" id="lock-error"></div>
+    <button class="lock-btn" onclick="tryUnlock()">🔓 Unlock</button>
+    <div class="lock-footer">
+      Degrai Interiors Pvt. Ltd. · Ahmedabad<br>
+      Protected Admin Access
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">DI</div>
+    <div class="logo-text">
+      <div class="brand">Degrai</div>
+      <div class="sub">Interiors Admin</div>
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <div class="nav-item active" onclick="showPage('dashboard')"><span class="icon">🏠</span> Dashboard</div>
+    <div class="nav-label">Documents</div>
+    <div class="nav-item" onclick="showPage('quotation')"><span class="icon">📋</span> Quotation</div>
+    <div class="nav-item" onclick="showPage('lpo')"><span class="icon">📦</span> LPO</div>
+    <div class="nav-item" onclick="showPage('contract')"><span class="icon">📝</span> Contract</div>
+    <div class="nav-item" onclick="showPage('delivery')"><span class="icon">🚚</span> Delivery Note</div>
+    <div class="nav-item" onclick="showPage('invoice')"><span class="icon">💵</span> Invoice</div>
+    <div class="nav-label">Management</div>
+    <div class="nav-item" onclick="showPage('projects')"><span class="icon">🏗️</span> Projects</div>
+    <div class="nav-item" onclick="showPage('finance')"><span class="icon">📊</span> Finance & Accounts</div>
+    <div class="nav-item" onclick="showPage('salary')"><span class="icon">👷</span> Salary & HR</div>
+    <div class="nav-item" onclick="showPage('progress')"><span class="icon">📈</span> Progress Report</div>
+    <div class="nav-label">System</div>
+    <div class="nav-item" onclick="showPage('settings')"><span class="icon">⚙️</span> Settings</div>
+  </div>
+  <div class="sidebar-footer">
+    <p>Degrai Interiors Pvt. Ltd.</p>
+    <p>Ahmedabad, Gujarat</p>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button id="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-badge">Admin</span>
+      <div class="topbar-user"><div class="avatar">DI</div> <span>Administrator</span></div>
+      <button class="logout-btn" onclick="lockApp()">🔒 Lock</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ DASHBOARD ═══════════════════════ -->
+  <div class="page active" id="page-dashboard">
+    <div class="cards-grid">
+      <div class="stat-card"><div class="stat-label">Active Projects</div><div class="stat-value" id="d-projects">0</div><div class="stat-sub">Ongoing interior works</div></div>
+      <div class="stat-card success"><div class="stat-label">Total Revenue (INR)</div><div class="stat-value" id="d-revenue">₹0</div><div class="stat-sub">Invoices generated</div></div>
+      <div class="stat-card info"><div class="stat-label">Pending Quotations</div><div class="stat-value" id="d-quotes">0</div><div class="stat-sub">Awaiting approval</div></div>
+      <div class="stat-card warn"><div class="stat-label">Employees</div><div class="stat-value" id="d-emp">0</div><div class="stat-sub">On payroll</div></div>
+    </div>
+
+    <div class="two-col">
+      <div class="table-wrap">
+        <div class="table-head"><h3>Recent Projects</h3><button class="btn btn-primary btn-sm" onclick="showPage('projects')">View All</button></div>
+        <table><thead><tr><th>Project</th><th>Client</th><th>Progress</th><th>Status</th></tr></thead>
+        <tbody id="dash-projects-table"><tr><td colspan="4" class="no-data">No projects yet</td></tr></tbody></table>
+      </div>
+      <div class="table-wrap">
+        <div class="table-head"><h3>Recent Invoices</h3><button class="btn btn-primary btn-sm" onclick="showPage('invoice')">View All</button></div>
+        <table><thead><tr><th>Invoice #</th><th>Client</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody id="dash-invoices-table"><tr><td colspan="4" class="no-data">No invoices yet</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Quick Stats</h3>
+      <div class="cards-grid" style="margin-bottom:0">
+        <div class="stat-card"><div class="stat-label">Quotations Sent</div><div class="stat-value" id="qs-quotes">0</div></div>
+        <div class="stat-card"><div class="stat-label">LPOs Received</div><div class="stat-value" id="qs-lpos">0</div></div>
+        <div class="stat-card"><div class="stat-label">Contracts Signed</div><div class="stat-value" id="qs-contracts">0</div></div>
+        <div class="stat-card success"><div class="stat-label">Delivery Notes</div><div class="stat-value" id="qs-dn">0</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ QUOTATION ═══════════════════════ -->
+  <div class="page" id="page-quotation">
+    <div class="page-header">
+      <h2>Quotation Generator</h2>
+      <div class="flex gap-2">
+        <button class="btn btn-secondary" onclick="showPage('quotation-list')">📋 All Quotations</button>
+        <button class="btn btn-primary" onclick="newQuotation()">+ New Quotation</button>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="form-section">
+        <h3>Client Information</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Quotation No.</label><input id="q-no" placeholder="QT-2024-001" /></div>
+          <div class="form-group"><label>Date</label><input type="date" id="q-date" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Client Name</label><input id="q-client" placeholder="Client / Company Name" /></div>
+          <div class="form-group"><label>Project Name</label><input id="q-project" placeholder="Project Name" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Site Address</label><input id="q-address" placeholder="Site Location" /></div>
+          <div class="form-group"><label>Client Contact</label><input id="q-contact" placeholder="+91 XXXXX XXXXX" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Client Email</label><input id="q-email" placeholder="client@email.com" /></div>
+          <div class="form-group"><label>Valid Until</label><input type="date" id="q-valid" /></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <h3>Quotation Settings</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Work Category</label>
+            <select id="q-category">
+              <option value="">-- Select Category --</option>
+              <option>Joinery / Furniture Work</option>
+              <option>Glass & Aluminium Work</option>
+              <option>False Ceiling – Gypsum / POP / Wood / PVC</option>
+              <option>Wall Paint</option>
+              <option>Upholstery & Curtains</option>
+              <option>Stone & Corian</option>
+              <option>Electric & Light Work</option>
+              <option>Metal Work</option>
+              <option>Multiple / Complete Interior</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Currency</label>
+            <select id="q-currency"><option>INR (₹)</option><option>USD ($)</option><option>AED (د.إ)</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Discount (%)</label><input type="number" id="q-discount" value="0" min="0" max="100" onchange="calcQuotation()" /></div>
+          <div class="form-group"><label>GST (%)</label>
+            <select id="q-gst" onchange="calcQuotation()">
+              <option value="0">No GST</option>
+              <option value="5">5%</option>
+              <option value="12">12%</option>
+              <option value="18" selected>18% GST</option>
+              <option value="28">28%</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Notes / Terms</label><textarea id="q-notes" rows="3" placeholder="Any special notes or terms..."></textarea></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Item Details</h3>
+      <div style="overflow-x:auto">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th style="width:40px">#</th>
+              <th>Description of Work</th>
+              <th style="width:120px">Area / Unit</th>
+              <th style="width:80px">Qty</th>
+              <th style="width:90px">Unit</th>
+              <th style="width:110px">Rate (₹)</th>
+              <th style="width:120px">Amount (₹)</th>
+              <th style="width:40px"></th>
+            </tr>
+          </thead>
+          <tbody id="q-items-body"></tbody>
+          <tfoot>
+            <tr class="items-total-row">
+              <td colspan="5"></td>
+              <td style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px">Subtotal</td>
+              <td class="amount-col" id="q-subtotal">0.00</td>
+              <td></td>
+            </tr>
+            <tr><td colspan="5"></td><td style="font-size:11px">Discount</td><td class="amount-col" id="q-discount-amt">0.00</td><td></td></tr>
+            <tr><td colspan="5"></td><td style="font-size:11px">GST Amount</td><td class="amount-col" id="q-gst-amt">0.00</td><td></td></tr>
+            <tr class="items-total-row"><td colspan="5"></td><td style="font-size:14px">TOTAL</td><td class="amount-col" style="font-size:16px" id="q-total">₹ 0.00</td><td></td></tr>
+          </tfoot>
+        </table>
+      </div>
+      <button class="btn btn-secondary btn-sm add-row-btn" onclick="addQuoteRow()">+ Add Item</button>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveQuotation()">💾 Save Quotation</button>
+      <button class="btn btn-success" onclick="generateQuotationPDF()">📥 Download PDF</button>
+      <button class="btn btn-secondary" onclick="clearQuotation()">🔄 Clear Form</button>
+    </div>
+  </div>
+
+  <!-- Quotation List page -->
+  <div class="page" id="page-quotation-list">
+    <div class="page-header"><h2>All Quotations</h2><button class="btn btn-primary" onclick="showPage('quotation')">+ New</button></div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Quot. No</th><th>Client</th><th>Project</th><th>Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="quotations-list-body"><tr><td colspan="7" class="no-data">No quotations saved yet.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ LPO ═══════════════════════ -->
+  <div class="page" id="page-lpo">
+    <div class="page-header"><h2>LPO – Local Purchase Order</h2>
+      <button class="btn btn-primary" onclick="newLPO()">+ New LPO</button>
+    </div>
+    <div class="two-col">
+      <div class="form-section">
+        <h3>LPO Details</h3>
+        <div class="form-row">
+          <div class="form-group"><label>LPO Number</label><input id="lpo-no" placeholder="LPO-2024-001" /></div>
+          <div class="form-group"><label>Date</label><input type="date" id="lpo-date" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Vendor / Supplier Name</label><input id="lpo-vendor" placeholder="Vendor Name" /></div>
+          <div class="form-group"><label>Vendor Contact</label><input id="lpo-vendor-contact" placeholder="+91 XXXXX XXXXX" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Project / Site</label><input id="lpo-project" placeholder="Project Name" /></div>
+          <div class="form-group"><label>Delivery Date</label><input type="date" id="lpo-delivery" /></div>
+        </div>
+        <div class="form-group"><label>Delivery Address</label><input id="lpo-delivery-addr" placeholder="Delivery site address" /></div>
+      </div>
+      <div class="form-section">
+        <h3>Payment & Terms</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Payment Terms</label>
+            <select id="lpo-payment-terms">
+              <option>Advance 50% + 50% on Delivery</option>
+              <option>100% Advance</option>
+              <option>Net 30 Days</option>
+              <option>Net 15 Days</option>
+              <option>On Delivery</option>
+              <option>Custom</option>
+            </select>
+          </div>
+          <div class="form-group"><label>GST (%)</label>
+            <select id="lpo-gst" onchange="calcLPO()">
+              <option value="0">No GST</option><option value="5">5%</option>
+              <option value="12">12%</option><option value="18" selected>18%</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Special Instructions</label><textarea id="lpo-notes" rows="4" placeholder="Delivery instructions, quality requirements..."></textarea></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Items / Materials</h3>
+      <div style="overflow-x:auto">
+        <table class="items-table">
+          <thead><tr><th>#</th><th>Material / Item Description</th><th>Specification</th><th>Qty</th><th>Unit</th><th>Unit Price (₹)</th><th>Amount (₹)</th><th></th></tr></thead>
+          <tbody id="lpo-items-body"></tbody>
+          <tfoot>
+            <tr class="items-total-row"><td colspan="5"></td><td>Subtotal</td><td id="lpo-subtotal">0.00</td><td></td></tr>
+            <tr><td colspan="5"></td><td>GST</td><td id="lpo-gst-amt">0.00</td><td></td></tr>
+            <tr class="items-total-row"><td colspan="5"></td><td>TOTAL</td><td id="lpo-total">₹ 0.00</td><td></td></tr>
+          </tfoot>
+        </table>
+      </div>
+      <button class="btn btn-secondary btn-sm add-row-btn" onclick="addLPORow()">+ Add Item</button>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveLPO()">💾 Save LPO</button>
+      <button class="btn btn-success" onclick="generateLPOPDF()">📥 Download PDF</button>
+      <button class="btn btn-secondary" onclick="clearLPO()">🔄 Clear</button>
+    </div>
+    <div class="table-wrap" style="margin-top:24px">
+      <div class="table-head"><h3>LPO History</h3></div>
+      <table><thead><tr><th>LPO No</th><th>Vendor</th><th>Project</th><th>Date</th><th>Amount</th><th>Actions</th></tr></thead>
+      <tbody id="lpo-list-body"><tr><td colspan="6" class="no-data">No LPOs yet.</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ CONTRACT ═══════════════════════ -->
+  <div class="page" id="page-contract">
+    <div class="page-header"><h2>Contract Agreement</h2>
+      <button class="btn btn-primary" onclick="newContract()">+ New Contract</button>
+    </div>
+    <div class="two-col">
+      <div class="form-section">
+        <h3>Contract Details</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Contract No.</label><input id="c-no" placeholder="CA-2024-001" /></div>
+          <div class="form-group"><label>Date</label><input type="date" id="c-date" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Client Name</label><input id="c-client" placeholder="Client Name" /></div>
+          <div class="form-group"><label>Main Contractor</label><input id="c-contractor" placeholder="Main Contractor Name" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Project Name</label><input id="c-project" placeholder="Project Name" /></div>
+          <div class="form-group"><label>Site Location</label><input id="c-site" placeholder="Project Site" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Start Date</label><input type="date" id="c-start" /></div>
+          <div class="form-group"><label>End Date</label><input type="date" id="c-end" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Contract Value (₹)</label><input type="number" id="c-value" placeholder="0" onchange="calcContract()" /></div>
+          <div class="form-group"><label>Work Type</label>
+            <select id="c-worktype">
+              <option>Complete Interior Execution</option>
+              <option>Joinery / Furniture Work</option>
+              <option>Glass & Aluminium Work</option>
+              <option>False Ceiling</option>
+              <option>Wall Paint</option>
+              <option>Electric & Light Work</option>
+              <option>Multiple Works</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="form-section">
+        <h3>Payment Schedule</h3>
+        <div id="payment-schedule-rows"></div>
+        <button class="btn btn-secondary btn-sm" onclick="addPaymentRow()">+ Add Payment Milestone</button>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid #f0ede8">
+          <div class="flex-center gap-2" style="font-size:13px;font-weight:700">
+            <span style="flex:1">Total Allocated:</span>
+            <span id="c-alloc" style="color:var(--gold)">₹ 0.00</span>
+          </div>
+          <div class="flex-center gap-2 mt-2" style="font-size:13px;font-weight:700">
+            <span style="flex:1">Contract Value:</span>
+            <span id="c-val-display" style="color:var(--gray)">₹ 0.00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Scope of Work</h3>
+      <textarea id="c-scope" rows="4" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit" placeholder="Detailed scope of works to be executed..."></textarea>
+    </div>
+
+    <div class="form-section">
+      <h3>Terms & Conditions</h3>
+      <div id="tc-editor">
+        <div id="tc-list"></div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <input id="tc-input" style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit" placeholder="Add a term & condition..." />
+          <button class="btn btn-secondary btn-sm" onclick="addTC()">Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveContract()">💾 Save Contract</button>
+      <button class="btn btn-success" onclick="generateContractPDF()">📥 Download PDF</button>
+      <button class="btn btn-secondary" onclick="clearContract()">🔄 Clear</button>
+    </div>
+    <div class="table-wrap" style="margin-top:24px">
+      <div class="table-head"><h3>Saved Contracts</h3></div>
+      <table><thead><tr><th>Contract No</th><th>Client</th><th>Project</th><th>Value</th><th>Start</th><th>End</th><th>Actions</th></tr></thead>
+      <tbody id="contract-list-body"><tr><td colspan="7" class="no-data">No contracts yet.</td></tr></tbody>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ DELIVERY NOTE ═══════════════════════ -->
+  <div class="page" id="page-delivery">
+    <div class="page-header"><h2>Delivery Note</h2>
+      <button class="btn btn-primary" onclick="newDN()">+ New Delivery Note</button>
+    </div>
+    <div class="two-col">
+      <div class="form-section">
+        <h3>Delivery Details</h3>
+        <div class="form-row">
+          <div class="form-group"><label>DN Number</label><input id="dn-no" placeholder="DN-2024-001" /></div>
+          <div class="form-group"><label>Date</label><input type="date" id="dn-date" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Client Name</label><input id="dn-client" placeholder="Client Name" /></div>
+          <div class="form-group"><label>Project / Site</label><input id="dn-project" placeholder="Project Name" /></div>
+        </div>
+        <div class="form-group"><label>Delivery Address</label><input id="dn-address" placeholder="Delivery site address" /></div>
+        <div class="form-row">
+          <div class="form-group"><label>Delivered By</label><input id="dn-deliveredby" placeholder="Driver / Staff Name" /></div>
+          <div class="form-group"><label>Vehicle No.</label><input id="dn-vehicle" placeholder="GJ-01-XX-0000" /></div>
+        </div>
+        <div class="form-group"><label>Reference (Quotation / LPO No.)</label><input id="dn-ref" placeholder="QT-2024-001 / LPO-2024-001" /></div>
+      </div>
+      <div class="form-section">
+        <h3>Receiver Information</h3>
+        <div class="form-group"><label>Received By (Name)</label><input id="dn-recv-name" placeholder="Receiver Name" /></div>
+        <div class="form-group"><label>Designation</label><input id="dn-recv-desg" placeholder="Site Engineer / Supervisor" /></div>
+        <div class="form-group"><label>Contact</label><input id="dn-recv-contact" placeholder="+91 XXXXX XXXXX" /></div>
+        <div class="form-group"><label>Remarks</label><textarea id="dn-remarks" rows="3" placeholder="Any remarks about the delivery..."></textarea></div>
+      </div>
+    </div>
+    <div class="form-section">
+      <h3>Items Delivered</h3>
+      <div style="overflow-x:auto">
+        <table class="items-table">
+          <thead><tr><th>#</th><th>Item / Material Description</th><th>Quantity</th><th>Unit</th><th>Condition</th><th>Remarks</th><th></th></tr></thead>
+          <tbody id="dn-items-body"></tbody>
+        </table>
+      </div>
+      <button class="btn btn-secondary btn-sm add-row-btn" onclick="addDNRow()">+ Add Item</button>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveDN()">💾 Save</button>
+      <button class="btn btn-success" onclick="generateDNPDF()">📥 Download PDF</button>
+      <button class="btn btn-secondary" onclick="clearDN()">🔄 Clear</button>
+    </div>
+    <div class="table-wrap" style="margin-top:24px">
+      <div class="table-head"><h3>Delivery Note History</h3></div>
+      <table><thead><tr><th>DN No</th><th>Client</th><th>Project</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody id="dn-list-body"><tr><td colspan="5" class="no-data">No delivery notes yet.</td></tr></tbody>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ INVOICE ═══════════════════════ -->
+  <div class="page" id="page-invoice">
+    <div class="page-header"><h2>Invoice Generator</h2>
+      <button class="btn btn-primary" onclick="newInvoice()">+ New Invoice</button>
+    </div>
+    <div class="two-col">
+      <div class="form-section">
+        <h3>Invoice Details</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Invoice No.</label><input id="inv-no" placeholder="INV-2024-001" /></div>
+          <div class="form-group"><label>Invoice Date</label><input type="date" id="inv-date" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Due Date</label><input type="date" id="inv-due" /></div>
+          <div class="form-group"><label>Bill Type</label>
+            <select id="inv-bill-type">
+              <option>Running Bill</option>
+              <option>Final Bill</option>
+              <option>Advance Bill</option>
+              <option>Retention Bill</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Client Name</label><input id="inv-client" placeholder="Client / Company Name" /></div>
+          <div class="form-group"><label>Project Name</label><input id="inv-project" placeholder="Project Name" /></div>
+        </div>
+        <div class="form-group"><label>Client Address</label><input id="inv-client-addr" placeholder="Client billing address" /></div>
+        <div class="form-row">
+          <div class="form-group"><label>Client GST No.</label><input id="inv-client-gst" placeholder="27XXXXX1234X1ZX" /></div>
+          <div class="form-group"><label>PO / LPO Reference</label><input id="inv-ref" placeholder="LPO-2024-001" /></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <h3>Tax & Payment Settings</h3>
+        <div class="form-row">
+          <div class="form-group"><label>GST Type</label>
+            <select id="inv-gst-type" onchange="calcInvoice()">
+              <option value="0">No GST</option>
+              <option value="5">5% GST</option>
+              <option value="12">12% GST</option>
+              <option value="18" selected>18% GST (CGST 9% + SGST 9%)</option>
+              <option value="28">28% GST</option>
+              <option value="18igst">18% IGST</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Discount (%)</label><input type="number" id="inv-discount" value="0" onchange="calcInvoice()" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Previous Running Bill (₹)</label><input type="number" id="inv-prev-bill" value="0" onchange="calcInvoice()" placeholder="0" /></div>
+          <div class="form-group"><label>Retention Amount (₹)</label><input type="number" id="inv-retention" value="0" onchange="calcInvoice()" placeholder="0" /></div>
+        </div>
+        <div class="form-group"><label>Payment Method</label>
+          <select id="inv-payment-method">
+            <option>Bank Transfer / NEFT</option>
+            <option>Cheque</option>
+            <option>Cash</option>
+            <option>UPI</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Bank Details for Payment</label>
+          <textarea id="inv-bank" rows="3" placeholder="Bank Name: &#10;Account No: &#10;IFSC Code: "></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Work Items / Bill of Quantities</h3>
+      <div style="overflow-x:auto">
+        <table class="items-table">
+          <thead><tr><th>#</th><th>Description</th><th>Area/Unit</th><th>Qty</th><th>Unit</th><th>Rate (₹)</th><th>Amount (₹)</th><th></th></tr></thead>
+          <tbody id="inv-items-body"></tbody>
+          <tfoot>
+            <tr><td colspan="5"></td><td style="font-size:11px">Subtotal</td><td class="amount-col" id="inv-subtotal">0.00</td><td></td></tr>
+            <tr><td colspan="5"></td><td style="font-size:11px">Discount</td><td class="amount-col" id="inv-discount-amt">0.00</td><td></td></tr>
+            <tr><td colspan="5"></td><td style="font-size:11px">Taxable Amount</td><td class="amount-col" id="inv-taxable">0.00</td><td></td></tr>
+            <tr id="inv-cgst-row"><td colspan="5"></td><td style="font-size:11px">CGST (9%)</td><td class="amount-col" id="inv-cgst-amt">0.00</td><td></td></tr>
+            <tr id="inv-sgst-row"><td colspan="5"></td><td style="font-size:11px">SGST (9%)</td><td class="amount-col" id="inv-sgst-amt">0.00</td><td></td></tr>
+            <tr id="inv-igst-row" style="display:none"><td colspan="5"></td><td style="font-size:11px">IGST (18%)</td><td class="amount-col" id="inv-igst-amt">0.00</td><td></td></tr>
+            <tr><td colspan="5"></td><td style="font-size:11px">Previous Bill Deduction</td><td class="amount-col" id="inv-prev-deduct">0.00</td><td></td></tr>
+            <tr><td colspan="5"></td><td style="font-size:11px">Retention Deduction</td><td class="amount-col" id="inv-retention-deduct">0.00</td><td></td></tr>
+            <tr class="items-total-row"><td colspan="5"></td><td style="font-size:14px">NET PAYABLE</td><td class="amount-col" style="font-size:16px" id="inv-total">₹ 0.00</td><td></td></tr>
+          </tfoot>
+        </table>
+      </div>
+      <button class="btn btn-secondary btn-sm add-row-btn" onclick="addInvRow()">+ Add Item</button>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveInvoice()">💾 Save Invoice</button>
+      <button class="btn btn-success" onclick="generateInvoicePDF()">📥 Download PDF</button>
+      <button class="btn btn-secondary" onclick="clearInvoice()">🔄 Clear</button>
+    </div>
+    <div class="table-wrap" style="margin-top:24px">
+      <div class="table-head"><h3>Invoice History</h3></div>
+      <table><thead><tr><th>Invoice No</th><th>Client</th><th>Project</th><th>Date</th><th>Bill Type</th><th>Amount</th><th>Actions</th></tr></thead>
+      <tbody id="invoice-list-body"><tr><td colspan="7" class="no-data">No invoices yet.</td></tr></tbody>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ PROJECTS ═══════════════════════ -->
+  <div class="page" id="page-projects">
+    <div class="page-header"><h2>Project Management</h2>
+      <button class="btn btn-primary" onclick="openProjectModal()">+ New Project</button>
+    </div>
+    <div class="cards-grid">
+      <div class="stat-card"><div class="stat-label">Total Projects</div><div class="stat-value" id="pm-total">0</div></div>
+      <div class="stat-card success"><div class="stat-label">Completed</div><div class="stat-value" id="pm-done">0</div></div>
+      <div class="stat-card warn"><div class="stat-label">In Progress</div><div class="stat-value" id="pm-active">0</div></div>
+      <div class="stat-card info"><div class="stat-label">Not Started</div><div class="stat-value" id="pm-pending">0</div></div>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Project</th><th>Client</th><th>Category</th><th>Start</th><th>End</th><th>Progress</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="projects-list-body"><tr><td colspan="8" class="no-data">No projects yet.</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ FINANCE ═══════════════════════ -->
+  <div class="page" id="page-finance">
+    <div class="page-header"><h2>Finance & Accounting</h2>
+      <button class="btn btn-primary" onclick="openTxModal()">+ Add Transaction</button>
+    </div>
+    <div class="cards-grid">
+      <div class="stat-card success"><div class="stat-label">Total Income</div><div class="stat-value" id="f-income">₹0</div></div>
+      <div class="stat-card danger"><div class="stat-label">Total Expenses</div><div class="stat-value" id="f-expense">₹0</div></div>
+      <div class="stat-card"><div class="stat-label">Net Balance</div><div class="stat-value" id="f-balance">₹0</div></div>
+      <div class="stat-card info"><div class="stat-label">Pending Receivable</div><div class="stat-value" id="f-receivable">₹0</div></div>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="finTab('all')">All Transactions</button>
+      <button class="tab-btn" onclick="finTab('income')">Income</button>
+      <button class="tab-btn" onclick="finTab('expense')">Expenses</button>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Project</th><th>Type</th><th>Amount (₹)</th><th>Actions</th></tr></thead>
+      <tbody id="finance-list-body"><tr><td colspan="7" class="no-data">No transactions yet.</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ SALARY ═══════════════════════ -->
+  <div class="page" id="page-salary">
+    <div class="page-header"><h2>Salary & HR Management</h2>
+      <button class="btn btn-primary" onclick="openEmpModal()">+ Add Employee</button>
+    </div>
+    <div class="cards-grid">
+      <div class="stat-card"><div class="stat-label">Total Staff</div><div class="stat-value" id="s-total">0</div></div>
+      <div class="stat-card warn"><div class="stat-label">Monthly Payroll</div><div class="stat-value" id="s-payroll">₹0</div></div>
+      <div class="stat-card success"><div class="stat-label">Paid This Month</div><div class="stat-value" id="s-paid">₹0</div></div>
+      <div class="stat-card danger"><div class="stat-label">Pending Salary</div><div class="stat-value" id="s-pending">₹0</div></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-head"><h3>Employee List</h3><button class="btn btn-success btn-sm" onclick="generatePayrollPDF()">📥 Payroll PDF</button></div>
+      <table><thead><tr><th>Name</th><th>Designation</th><th>Type</th><th>Daily Rate / Salary</th><th>Days/Month</th><th>Net Pay</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="salary-list-body"><tr><td colspan="8" class="no-data">No employees yet.</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ PROGRESS REPORT ═══════════════════════ -->
+  <div class="page" id="page-progress">
+    <div class="page-header"><h2>Progress Report</h2>
+      <button class="btn btn-primary" onclick="openProgressModal()">+ Add Report</button>
+    </div>
+    <div class="form-section">
+      <h3>Generate Progress Report</h3>
+      <div class="form-row">
+        <div class="form-group"><label>Select Project</label>
+          <select id="pr-project-sel">
+            <option value="">-- Select Project --</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Report Date</label><input type="date" id="pr-date" /></div>
+        <div class="form-group"><label>Report Period</label>
+          <select id="pr-period">
+            <option>Weekly</option><option>Bi-Weekly</option><option>Monthly</option><option>Custom</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-success" onclick="generateProgressPDF()">📥 Generate Progress PDF</button>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Project</th><th>Date</th><th>Work Done</th><th>Overall %</th><th>Issues</th><th>Next Steps</th><th>Actions</th></tr></thead>
+      <tbody id="progress-list-body"><tr><td colspan="7" class="no-data">No progress reports yet.</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ SETTINGS ═══════════════════════ -->
+  <div class="page" id="page-settings">
+    <div class="page-header"><h2>Settings</h2></div>
+    <div class="two-col">
+      <div class="form-section">
+        <h3>Company Information</h3>
+        <div class="form-group"><label>Company Name</label><input id="s-name" value="Degrai Interiors" /></div>
+        <div class="form-group"><label>Tagline</label><input id="s-tagline" value="Interior Execution Specialists" /></div>
+        <div class="form-group"><label>Address Line 1</label><input id="s-addr1" value="Amraiwadi, Ahmedabad" /></div>
+        <div class="form-group"><label>Address Line 2</label><input id="s-addr2" value="Gujarat – 380038" /></div>
+        <div class="form-group"><label>Phone</label><input id="s-phone" value="+91 96722 55141" /></div>
+        <div class="form-group"><label>Email</label><input id="s-email" value="info@interiorsdegrai.in" /></div>
+        <div class="form-group"><label>Website</label><input id="s-website" value="www.interiorsdegrai.in" /></div>
+        <div class="form-group"><label>GST Number</label><input id="s-gst" placeholder="24XXXXX1234X1ZX" /></div>
+      </div>
+      <div class="form-section">
+        <h3>Document Settings</h3>
+        <div class="form-group"><label>Quotation Prefix</label><input id="s-qt-prefix" value="QT" /></div>
+        <div class="form-group"><label>Invoice Prefix</label><input id="s-inv-prefix" value="INV" /></div>
+        <div class="form-group"><label>LPO Prefix</label><input id="s-lpo-prefix" value="LPO" /></div>
+        <div class="form-group"><label>Contract Prefix</label><input id="s-ca-prefix" value="CA" /></div>
+        <div class="form-group"><label>Delivery Note Prefix</label><input id="s-dn-prefix" value="DN" /></div>
+        <div class="form-group"><label>Default GST %</label>
+          <select id="s-def-gst"><option value="0">No GST</option><option value="5">5%</option><option value="12">12%</option><option value="18" selected>18%</option></select>
+        </div>
+        <div class="form-group"><label>Default Payment Terms</label><textarea id="s-pay-terms" rows="3">50% Advance, 40% on Completion, 10% on Handover</textarea></div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="form-section">
+        <h3>Social Media Links</h3>
+        <div class="form-group"><label>LinkedIn</label><input id="s-linkedin" value="linkedin.com/company/interiorsdegrai" /></div>
+        <div class="form-group"><label>Instagram</label><input id="s-instagram" value="instagram.com/interiorsdegrai" /></div>
+        <div class="form-group"><label>Facebook</label><input id="s-facebook" value="facebook.com/interiorsdegrai" /></div>
+        <div class="form-group"><label>YouTube</label><input id="s-youtube" value="youtube.com/interiorsdegrai" /></div>
+      </div>
+      <div class="form-section">
+        <h3>Bank Account Details</h3>
+        <div class="form-group"><label>Bank Name</label><input id="s-bank-name" placeholder="Bank Name" /></div>
+        <div class="form-group"><label>Account Name</label><input id="s-bank-acname" placeholder="Account Holder Name" /></div>
+        <div class="form-group"><label>Account Number</label><input id="s-bank-ac" placeholder="XXXX XXXX XXXX" /></div>
+        <div class="form-group"><label>IFSC Code</label><input id="s-bank-ifsc" placeholder="SBIN0000000" /></div>
+        <div class="form-group"><label>Branch</label><input id="s-bank-branch" placeholder="Branch Name, City" /></div>
+      </div>
+    </div>
+    <div class="form-section">
+      <h3>Default Terms & Conditions (Contracts)</h3>
+      <textarea id="s-default-tc" rows="6" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit">1. All material shall be as per approved sample and specification.
+2. Any variation in work shall be approved by the client in writing before execution.
+3. Degrai Interiors shall not be responsible for delays due to site access issues or force majeure.
+4. Payment to be made as per agreed schedule; delay in payment attracts 2% monthly interest.
+5. All disputes subject to Ahmedabad jurisdiction only.
+6. This contract is valid for the scope of work mentioned herein only.</textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+      <button class="btn btn-secondary" onclick="loadSettings()">🔄 Reset</button>
+      <button class="btn btn-danger" onclick="changeAdminPassword()">🔑 Change Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MODALS ═══════════ -->
+
+<!-- Project Modal -->
+<div class="modal-overlay" id="modal-project">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header"><h2>Project Details</h2><button class="modal-close" onclick="closeModal('modal-project')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Project Name</label><input id="pm-name" placeholder="Project Name" /></div>
+        <div class="form-group"><label>Client Name</label><input id="pm-client" placeholder="Client Name" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Main Contractor</label><input id="pm-contractor" placeholder="Main Contractor" /></div>
+        <div class="form-group"><label>Site Location</label><input id="pm-location" placeholder="Site Address" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Work Category</label>
+          <select id="pm-category">
+            <option>Complete Interior Execution</option>
+            <option>Joinery / Furniture Work</option>
+            <option>Glass & Aluminium Work</option>
+            <option>False Ceiling</option>
+            <option>Wall Paint</option>
+            <option>Upholstery & Curtains</option>
+            <option>Stone & Corian</option>
+            <option>Electric & Light Work</option>
+            <option>Metal Work</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Status</label>
+          <select id="pm-status">
+            <option>Not Started</option><option>In Progress</option><option>Completed</option><option>On Hold</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Start Date</label><input type="date" id="pm-start" /></div>
+        <div class="form-group"><label>End Date</label><input type="date" id="pm-end" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Contract Value (₹)</label><input type="number" id="pm-value" placeholder="0" /></div>
+        <div class="form-group"><label>Progress (%)</label><input type="number" id="pm-progress" placeholder="0" min="0" max="100" value="0" /></div>
+      </div>
+      <div class="form-group"><label>Notes</label><textarea id="pm-notes" rows="2" placeholder="Project notes..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-project')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProject()">Save Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- Transaction Modal -->
+<div class="modal-overlay" id="modal-tx">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header"><h2>Add Transaction</h2><button class="modal-close" onclick="closeModal('modal-tx')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Date</label><input type="date" id="tx-date" /></div>
+        <div class="form-group"><label>Type</label>
+          <select id="tx-type">
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label>Description</label><input id="tx-desc" placeholder="Transaction description" /></div>
+      <div class="form-row">
+        <div class="form-group"><label>Category</label>
+          <select id="tx-cat">
+            <option>Invoice Payment Received</option>
+            <option>Advance Received</option>
+            <option>Material Purchase</option>
+            <option>Labour Payment</option>
+            <option>Site Overhead</option>
+            <option>Office Expense</option>
+            <option>Tool / Equipment</option>
+            <option>Transport</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Project</label><input id="tx-project" placeholder="Project Name" /></div>
+      </div>
+      <div class="form-group"><label>Amount (₹)</label><input type="number" id="tx-amount" placeholder="0" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-tx')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTransaction()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Employee Modal -->
+<div class="modal-overlay" id="modal-emp">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header"><h2>Employee Details</h2><button class="modal-close" onclick="closeModal('modal-emp')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Full Name</label><input id="emp-name" placeholder="Employee Name" /></div>
+        <div class="form-group"><label>Designation</label><input id="emp-desg" placeholder="Carpenter / Supervisor / etc." /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Employment Type</label>
+          <select id="emp-type"><option>Daily Wage</option><option>Monthly</option><option>Contract</option></select>
+        </div>
+        <div class="form-group"><label>Rate / Salary (₹)</label><input type="number" id="emp-rate" placeholder="0" onchange="calcEmpPay()" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Working Days (this month)</label><input type="number" id="emp-days" placeholder="26" value="26" onchange="calcEmpPay()" /></div>
+        <div class="form-group"><label>Net Pay (₹)</label><input type="number" id="emp-net" placeholder="Auto calculated" readonly style="background:#f5f0e8;font-weight:700;color:var(--gold)" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Phone</label><input id="emp-phone" placeholder="+91 XXXXX XXXXX" /></div>
+        <div class="form-group"><label>Status</label>
+          <select id="emp-status"><option>Active</option><option>Inactive</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Aadhar No.</label><input id="emp-aadhar" placeholder="XXXX XXXX XXXX" /></div>
+        <div class="form-group"><label>Assigned Project</label><input id="emp-project" placeholder="Project Name" /></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-emp')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEmployee()">Save Employee</button>
+    </div>
+  </div>
+</div>
+
+<!-- Progress Modal -->
+<div class="modal-overlay" id="modal-progress">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header"><h2>Add Progress Report Entry</h2><button class="modal-close" onclick="closeModal('modal-progress')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Project</label>
+          <select id="prog-project-sel2"><option value="">-- Select --</option></select>
+        </div>
+        <div class="form-group"><label>Date</label><input type="date" id="prog-date" /></div>
+      </div>
+      <div class="form-group"><label>Work Completed Today / This Period</label><textarea id="prog-work" rows="3" placeholder="Describe the work completed..."></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label>Overall Completion (%)</label><input type="number" id="prog-pct" min="0" max="100" placeholder="0" /></div>
+        <div class="form-group"><label>Manpower on Site</label><input type="number" id="prog-manpower" placeholder="Number of workers" /></div>
+      </div>
+      <div class="form-group"><label>Issues / Challenges</label><textarea id="prog-issues" rows="2" placeholder="Any issues faced..."></textarea></div>
+      <div class="form-group"><label>Next Steps / Plan</label><textarea id="prog-next" rows="2" placeholder="What will be done next..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-progress')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProgress()">Save Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  DEGRAI INTERIORS ADMIN PANEL – FULL JS ENGINE
+// ═══════════════════════════════════════════════════
+
+// ── Data Store ──
+const DB = {
+  quotations: [], lpos: [], contracts: [], deliveries: [], invoices: [],
+  projects: [], transactions: [], employees: [], progressReports: [],
+  settings: {
+    name: 'Degrai Interiors', tagline: 'Interior Execution Specialists',
+    addr1: 'Amraiwadi, Ahmedabad', addr2: 'Gujarat – 380038',
+    phone: '+91 96722 55141', email: 'info@interiorsdegrai.in',
+    website: 'www.interiorsdegrai.in', gst: '',
+    bankName: '', bankAcName: '', bankAc: '', bankIfsc: '', bankBranch: '',
+    linkedin: 'linkedin.com/company/interiorsdegrai',
+    instagram: 'instagram.com/interiorsdegrai',
+    facebook: 'facebook.com/interiorsdegrai',
+    youtube: 'youtube.com/interiorsdegrai',
+    qtPrefix: 'QT', invPrefix: 'INV', lpoPrefix: 'LPO', caPrefix: 'CA', dnPrefix: 'DN',
+    defaultGst: 18,
+    defaultTC: `1. All material shall be as per approved sample and specification.\n2. Any variation in work shall be approved by the client in writing before execution.\n3. Degrai Interiors shall not be responsible for delays due to site access issues or force majeure.\n4. Payment to be made as per agreed schedule; delay in payment attracts 2% monthly interest.\n5. All disputes subject to Ahmedabad jurisdiction only.\n6. This contract is valid for the scope of work mentioned herein only.`,
+    defaultPayTerms: '50% Advance, 40% on Completion, 10% on Handover'
+  }
+};
+
+let editMode = null;
+let contractTCs = [];
+let paymentRows = [];
+
+// ── Persist to localStorage ──
+function save() { try { localStorage.setItem('degrai_db', JSON.stringify(DB)); } catch(e){} }
+function loadDB() {
+  try {
+    const d = localStorage.getItem('degrai_db');
+    if (d) { const p = JSON.parse(d); Object.assign(DB, p); }
+  } catch(e) {}
+}
+
+// ── Navigation ──
+const pageTitles = {
+  dashboard: 'Dashboard', quotation: 'New Quotation', 'quotation-list': 'All Quotations',
+  lpo: 'LPO', contract: 'Contract Agreement', delivery: 'Delivery Note',
+  invoice: 'Invoice', projects: 'Project Management', finance: 'Finance & Accounting',
+  salary: 'Salary & HR', progress: 'Progress Report', settings: 'Settings'
+};
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-' + id);
+  if (pg) pg.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'"+id+"'")) n.classList.add('active');
+  });
+  document.getElementById('topbar-title').textContent = pageTitles[id] || id;
+  if (id === 'dashboard') refreshDashboard();
+  if (id === 'quotation-list') renderQuotationList();
+  if (id === 'projects') { renderProjectList(); refreshProjectStats(); }
+  if (id === 'finance') renderFinance();
+  if (id === 'salary') renderSalary();
+  if (id === 'progress') { renderProgressList(); populateProjectDropdowns(); }
+  if (id === 'settings') loadSettingsForm();
+}
+
+// ── Toast ──
+function toast(msg, type='') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.innerHTML = (type==='success'?'✅ ':type==='error'?'❌ ':'ℹ️ ') + msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ── Modal ──
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── Date utility ──
+function today() { return new Date().toISOString().split('T')[0]; }
+function fmt(d) { if (!d) return ''; const p = d.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+function num(v) { return parseFloat(v)||0; }
+function inr(v) { return '₹ ' + num(v).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function genId(prefix, list) { return prefix + '-' + new Date().getFullYear() + '-' + String(list.length+1).padStart(3,'0'); }
+
+// ══════════════════════════════
+//  QUOTATION
+// ══════════════════════════════
+let qRowCount = 0;
+
+function newQuotation() {
+  clearQuotation();
+  document.getElementById('q-no').value = genId(DB.settings.qtPrefix || 'QT', DB.quotations);
+  document.getElementById('q-date').value = today();
+  document.getElementById('q-valid').value = new Date(Date.now()+30*86400000).toISOString().split('T')[0];
+  if (qRowCount === 0) { addQuoteRow(); addQuoteRow(); addQuoteRow(); }
+  showPage('quotation');
+}
+
+function addQuoteRow() {
+  qRowCount++;
+  const tbody = document.getElementById('q-items-body');
+  const tr = document.createElement('tr');
+  tr.id = 'qr-' + qRowCount;
+  tr.innerHTML = `
+    <td>${qRowCount}</td>
+    <td><input placeholder="Description of work..." /></td>
+    <td><input placeholder="e.g. 100 sqft" /></td>
+    <td><input type="number" value="1" min="0" oninput="calcQuotation()" style="width:60px" /></td>
+    <td><select style="width:70px"><option>Sqft</option><option>Rmt</option><option>Nos</option><option>Lot</option><option>LS</option><option>Kg</option></select></td>
+    <td><input type="number" value="0" min="0" oninput="calcQuotation()" /></td>
+    <td class="amount-col qr-amt">0.00</td>
+    <td><button class="btn btn-danger btn-sm btn-icon" onclick="removeRow('qr-${qRowCount}','calcQuotation')">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function removeRow(id, calcFn) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+  if (calcFn === 'calcQuotation') calcQuotation();
+  if (calcFn === 'calcLPO') calcLPO();
+  if (calcFn === 'calcInvoice') calcInvoice();
+}
+
+function calcQuotation() {
+  let sub = 0;
+  document.querySelectorAll('#q-items-body tr').forEach(tr => {
+    const ins = tr.querySelectorAll('input');
+    if (ins.length < 3) return;
+    const qty = num(ins[2].value);
+    const rate = num(ins[3].value);
+    const amt = qty * rate;
+    tr.querySelector('.qr-amt').textContent = amt.toFixed(2);
+    sub += amt;
+  });
+  const discPct = num(document.getElementById('q-discount').value);
+  const gstPct = num(document.getElementById('q-gst').value);
+  const discAmt = sub * discPct / 100;
+  const taxable = sub - discAmt;
+  const gstAmt = taxable * gstPct / 100;
+  const total = taxable + gstAmt;
+  document.getElementById('q-subtotal').textContent = sub.toFixed(2);
+  document.getElementById('q-discount-amt').textContent = discAmt.toFixed(2);
+  document.getElementById('q-gst-amt').textContent = gstAmt.toFixed(2);
+  document.getElementById('q-total').textContent = inr(total);
+}
+
+function getQuoteData() {
+  const items = [];
+  document.querySelectorAll('#q-items-body tr').forEach((tr, i) => {
+    const ins = tr.querySelectorAll('input');
+    const sel = tr.querySelectorAll('select');
+    if (ins.length < 3) return;
+    items.push({
+      sno: i+1,
+      desc: ins[0].value,
+      area: ins[1].value,
+      qty: num(ins[2].value),
+      unit: sel[0] ? sel[0].value : '',
+      rate: num(ins[3].value),
+      amount: num(ins[2].value) * num(ins[3].value)
+    });
+  });
+  return {
+    no: document.getElementById('q-no').value,
+    date: document.getElementById('q-date').value,
+    client: document.getElementById('q-client').value,
+    project: document.getElementById('q-project').value,
+    address: document.getElementById('q-address').value,
+    contact: document.getElementById('q-contact').value,
+    email: document.getElementById('q-email').value,
+    valid: document.getElementById('q-valid').value,
+    category: document.getElementById('q-category').value,
+    currency: document.getElementById('q-currency').value,
+    discount: num(document.getElementById('q-discount').value),
+    gst: num(document.getElementById('q-gst').value),
+    notes: document.getElementById('q-notes').value,
+    items,
+    subtotal: num(document.getElementById('q-subtotal').textContent),
+    total: document.getElementById('q-total').textContent,
+    status: 'Draft'
+  };
+}
+
+function saveQuotation() {
+  const d = getQuoteData();
+  if (!d.client || !d.no) { toast('Please fill Client Name and Quotation No.', 'error'); return; }
+  const idx = DB.quotations.findIndex(q => q.no === d.no);
+  if (idx > -1) DB.quotations[idx] = d; else DB.quotations.push(d);
+  save(); toast('Quotation saved!', 'success'); updateDashCounts();
+}
+
+function clearQuotation() {
+  ['q-no','q-date','q-client','q-project','q-address','q-contact','q-email','q-valid','q-notes'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('q-items-body').innerHTML = '';
+  qRowCount = 0; calcQuotation();
+}
+
+function renderQuotationList() {
+  const tbody = document.getElementById('quotations-list-body');
+  if (!DB.quotations.length) { tbody.innerHTML = '<tr><td colspan="7" class="no-data">No quotations yet.</td></tr>'; return; }
+  tbody.innerHTML = DB.quotations.map((q,i) => `
+    <tr>
+      <td>${q.no}</td><td>${q.client}</td><td>${q.project}</td><td>${fmt(q.date)}</td>
+      <td>${q.total}</td>
+      <td><span class="badge badge-${q.status==='Draft'?'draft':q.status==='Approved'?'active':'pending'}">${q.status}</span></td>
+      <td>
+        <button class="btn btn-info btn-sm" onclick="editQuotation(${i})">Edit</button>
+        <button class="btn btn-success btn-sm" onclick="downloadQuotationByIdx(${i})">PDF</button>
+        <select class="btn btn-secondary btn-sm" style="padding:4px;font-size:11px" onchange="changeQuoteStatus(${i},this.value)">
+          <option value="">Status</option><option>Draft</option><option>Sent</option><option>Approved</option><option>Rejected</option>
+        </select>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('quotations',${i},'renderQuotationList')">Del</button>
+      </td>
+    </tr>`).join('');
+}
+
+function editQuotation(i) {
+  const q = DB.quotations[i];
+  document.getElementById('q-no').value = q.no;
+  document.getElementById('q-date').value = q.date;
+  document.getElementById('q-client').value = q.client;
+  document.getElementById('q-project').value = q.project;
+  document.getElementById('q-address').value = q.address;
+  document.getElementById('q-contact').value = q.contact;
+  document.getElementById('q-email').value = q.email || '';
+  document.getElementById('q-valid').value = q.valid;
+  document.getElementById('q-notes').value = q.notes;
+  document.getElementById('q-discount').value = q.discount;
+  document.getElementById('q-gst').value = q.gst;
+  document.getElementById('q-items-body').innerHTML = '';
+  qRowCount = 0;
+  q.items.forEach(it => {
+    addQuoteRow();
+    const tr = document.getElementById('qr-' + qRowCount);
+    const ins = tr.querySelectorAll('input');
+    ins[0].value = it.desc;
+    ins[1].value = it.area;
+    ins[2].value = it.qty;
+    ins[3].value = it.rate;
+  });
+  calcQuotation();
+  showPage('quotation');
+}
+
+function changeQuoteStatus(i, s) { if (s) { DB.quotations[i].status = s; save(); renderQuotationList(); } }
+function downloadQuotationByIdx(i) { const q = DB.quotations[i]; generateQuotationPDFFromData(q); }
+
+// ══════════════════════════════
+//  LPO
+// ══════════════════════════════
+let lpoRowCount = 0;
+function newLPO() { clearLPO(); document.getElementById('lpo-no').value = genId(DB.settings.lpoPrefix||'LPO', DB.lpos); document.getElementById('lpo-date').value = today(); if(lpoRowCount===0){addLPORow();addLPORow();} }
+function addLPORow() {
+  lpoRowCount++;
+  const tbody = document.getElementById('lpo-items-body');
+  const tr = document.createElement('tr'); tr.id='lpor-'+lpoRowCount;
+  tr.innerHTML = `<td>${lpoRowCount}</td>
+    <td><input placeholder="Material description..." /></td>
+    <td><input placeholder="Specification" /></td>
+    <td><input type="number" value="1" oninput="calcLPO()" style="width:60px" /></td>
+    <td><select style="width:70px"><option>Nos</option><option>Kg</option><option>Bag</option><option>Box</option><option>Rmt</option><option>Sqft</option><option>Lot</option></select></td>
+    <td><input type="number" value="0" oninput="calcLPO()" /></td>
+    <td class="amount-col lpor-amt">0.00</td>
+    <td><button class="btn btn-danger btn-sm btn-icon" onclick="removeRow('lpor-${lpoRowCount}','calcLPO')">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+function calcLPO() {
+  let sub=0;
+  document.querySelectorAll('#lpo-items-body tr').forEach(tr=>{
+    const ins=tr.querySelectorAll('input'); if(ins.length<3) return;
+    const amt=num(ins[2].value)*num(ins[3].value);
+    tr.querySelector('.lpor-amt').textContent=amt.toFixed(2); sub+=amt;
+  });
+  const gp=num(document.getElementById('lpo-gst').value);
+  const ga=sub*gp/100; const tot=sub+ga;
+  document.getElementById('lpo-subtotal').textContent=sub.toFixed(2);
+  document.getElementById('lpo-gst-amt').textContent=ga.toFixed(2);
+  document.getElementById('lpo-total').textContent=inr(tot);
+}
+function getLPOData() {
+  const items=[];
+  document.querySelectorAll('#lpo-items-body tr').forEach((tr,i)=>{
+    const ins=tr.querySelectorAll('input'); const sel=tr.querySelectorAll('select');
+    if(ins.length<3) return;
+    items.push({sno:i+1,desc:ins[0].value,spec:ins[1].value,qty:num(ins[2].value),unit:sel[0]?sel[0].value:'',rate:num(ins[3].value),amount:num(ins[2].value)*num(ins[3].value)});
+  });
+  return {no:document.getElementById('lpo-no').value,date:document.getElementById('lpo-date').value,vendor:document.getElementById('lpo-vendor').value,vendorContact:document.getElementById('lpo-vendor-contact').value,project:document.getElementById('lpo-project').value,deliveryDate:document.getElementById('lpo-delivery').value,deliveryAddr:document.getElementById('lpo-delivery-addr').value,paymentTerms:document.getElementById('lpo-payment-terms').value,gst:num(document.getElementById('lpo-gst').value),notes:document.getElementById('lpo-notes').value,items,total:document.getElementById('lpo-total').textContent};
+}
+function saveLPO() {
+  const d=getLPOData(); if(!d.vendor||!d.no){toast('Fill Vendor and LPO No.','error');return;}
+  const idx=DB.lpos.findIndex(x=>x.no===d.no); if(idx>-1) DB.lpos[idx]=d; else DB.lpos.push(d);
+  save(); renderLPOList(); toast('LPO saved!','success'); updateDashCounts();
+}
+function clearLPO(){['lpo-no','lpo-date','lpo-vendor','lpo-vendor-contact','lpo-project','lpo-delivery','lpo-delivery-addr','lpo-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';}); document.getElementById('lpo-items-body').innerHTML=''; lpoRowCount=0; calcLPO();}
+function renderLPOList(){
+  const tbody=document.getElementById('lpo-list-body');
+  if(!DB.lpos.length){tbody.innerHTML='<tr><td colspan="6" class="no-data">No LPOs yet.</td></tr>';return;}
+  tbody.innerHTML=DB.lpos.map((l,i)=>`<tr><td>${l.no}</td><td>${l.vendor}</td><td>${l.project}</td><td>${fmt(l.date)}</td><td>${l.total}</td><td><button class="btn btn-success btn-sm" onclick="generateLPOPDFFromData(DB.lpos[${i}])">PDF</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('lpos',${i},'renderLPOList')">Del</button></td></tr>`).join('');
+}
+
+// ══════════════════════════════
+//  CONTRACT
+// ══════════════════════════════
+function newContract(){clearContract(); document.getElementById('c-no').value=genId(DB.settings.caPrefix||'CA',DB.contracts); document.getElementById('c-date').value=today(); addDefaultTCs(); addPaymentRow();}
+function addDefaultTCs(){
+  contractTCs=[]; document.getElementById('tc-list').innerHTML='';
+  const tcs=DB.settings.defaultTC?DB.settings.defaultTC.split('\n'):[];
+  tcs.forEach(t=>{if(t.trim())addTCItem(t.trim());});
+}
+function addTC(){ const v=document.getElementById('tc-input').value.trim(); if(v){addTCItem(v); document.getElementById('tc-input').value='';} }
+function addTCItem(text){ contractTCs.push(text); renderTCList(); }
+function renderTCList(){
+  document.getElementById('tc-list').innerHTML=contractTCs.map((t,i)=>`<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;font-size:13px;padding:6px 8px;background:#faf7f0;border-radius:4px"><span style="color:var(--gold);font-weight:700;flex-shrink:0">${i+1}.</span><span style="flex:1">${t}</span><button class="btn btn-danger btn-sm btn-icon" onclick="removeTC(${i})">✕</button></div>`).join('');
+}
+function removeTC(i){contractTCs.splice(i,1); renderTCList();}
+
+function addPaymentRow(){
+  paymentRows.push({milestone:'',pct:0,amount:0,dueDate:''});
+  renderPaymentRows();
+}
+function renderPaymentRows(){
+  const cont=document.getElementById('payment-schedule-rows');
+  cont.innerHTML=paymentRows.map((r,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 60px 110px 120px 30px;gap:8px;margin-bottom:8px;align-items:center">
+      <input value="${r.milestone}" placeholder="Milestone (e.g. On Completion)" style="padding:7px;border:1px solid #ddd;border-radius:4px;font-size:12px;font-family:inherit" onchange="paymentRows[${i}].milestone=this.value" />
+      <input type="number" value="${r.pct}" min="0" max="100" placeholder="%" style="padding:7px;border:1px solid #ddd;border-radius:4px;font-size:12px;font-family:inherit;text-align:center" oninput="paymentRows[${i}].pct=parseFloat(this.value)||0; calcContract()" />
+      <input type="number" value="${r.amount}" readonly placeholder="Amount" style="padding:7px;border:1px solid #ddd;border-radius:4px;font-size:12px;font-family:inherit;background:#f5e9cc;color:var(--gold);font-weight:700" id="pr-amt-${i}" />
+      <input type="date" value="${r.dueDate}" style="padding:7px;border:1px solid #ddd;border-radius:4px;font-size:12px;font-family:inherit" onchange="paymentRows[${i}].dueDate=this.value" />
+      <button class="btn btn-danger btn-sm btn-icon" onclick="removePaymentRow(${i})">✕</button>
+    </div>`).join('');
+  calcContract();
+}
+function removePaymentRow(i){paymentRows.splice(i,1); renderPaymentRows();}
+function calcContract(){
+  const val=num(document.getElementById('c-value').value);
+  let alloc=0;
+  paymentRows.forEach((r,i)=>{
+    r.amount=(val*r.pct/100); alloc+=r.amount;
+    const el=document.getElementById('pr-amt-'+i); if(el) el.value=r.amount.toFixed(2);
+  });
+  document.getElementById('c-alloc').textContent=inr(alloc);
+  document.getElementById('c-val-display').textContent=inr(val);
+}
+function getContractData(){
+  return {no:document.getElementById('c-no').value,date:document.getElementById('c-date').value,client:document.getElementById('c-client').value,contractor:document.getElementById('c-contractor').value,project:document.getElementById('c-project').value,site:document.getElementById('c-site').value,start:document.getElementById('c-start').value,end:document.getElementById('c-end').value,value:num(document.getElementById('c-value').value),worktype:document.getElementById('c-worktype').value,scope:document.getElementById('c-scope').value,tcs:[...contractTCs],payments:[...paymentRows]};
+}
+function saveContract(){
+  const d=getContractData(); if(!d.client||!d.no){toast('Fill Client and Contract No.','error');return;}
+  const idx=DB.contracts.findIndex(x=>x.no===d.no); if(idx>-1) DB.contracts[idx]=d; else DB.contracts.push(d);
+  save(); renderContractList(); toast('Contract saved!','success'); updateDashCounts();
+}
+function clearContract(){['c-no','c-date','c-client','c-contractor','c-project','c-site','c-start','c-end','c-value','c-scope'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';}); contractTCs=[]; paymentRows=[]; document.getElementById('tc-list').innerHTML=''; document.getElementById('payment-schedule-rows').innerHTML='';}
+function renderContractList(){
+  const tbody=document.getElementById('contract-list-body');
+  if(!DB.contracts.length){tbody.innerHTML='<tr><td colspan="7" class="no-data">No contracts yet.</td></tr>';return;}
+  tbody.innerHTML=DB.contracts.map((c,i)=>`<tr><td>${c.no}</td><td>${c.client}</td><td>${c.project}</td><td>${inr(c.value)}</td><td>${fmt(c.start)}</td><td>${fmt(c.end)}</td><td><button class="btn btn-success btn-sm" onclick="generateContractPDFFromData(DB.contracts[${i}])">PDF</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('contracts',${i},'renderContractList')">Del</button></td></tr>`).join('');
+}
+
+// ══════════════════════════════
+//  DELIVERY NOTE
+// ══════════════════════════════
+let dnRowCount=0;
+function newDN(){clearDN(); document.getElementById('dn-no').value=genId(DB.settings.dnPrefix||'DN',DB.deliveries); document.getElementById('dn-date').value=today(); if(dnRowCount===0){addDNRow();addDNRow();}}
+function addDNRow(){
+  dnRowCount++;
+  const tbody=document.getElementById('dn-items-body');
+  const tr=document.createElement('tr'); tr.id='dnr-'+dnRowCount;
+  tr.innerHTML=`<td>${dnRowCount}</td>
+    <td><input placeholder="Item description" /></td>
+    <td><input type="number" value="1" style="width:70px" /></td>
+    <td><select style="width:70px"><option>Nos</option><option>Set</option><option>Lot</option><option>Rmt</option><option>Sqft</option><option>Bag</option></select></td>
+    <td><select style="width:90px"><option>Good</option><option>Damaged</option><option>Partial</option></select></td>
+    <td><input placeholder="Remarks" /></td>
+    <td><button class="btn btn-danger btn-sm btn-icon" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+function getDNData(){
+  const items=[]; document.querySelectorAll('#dn-items-body tr').forEach((tr,i)=>{const ins=tr.querySelectorAll('input');const sel=tr.querySelectorAll('select');if(!ins.length)return; items.push({sno:i+1,desc:ins[0].value,qty:ins[1].value,unit:sel[0]?sel[0].value:'',condition:sel[1]?sel[1].value:'',remarks:ins[2]?ins[2].value:''});});
+  return {no:document.getElementById('dn-no').value,date:document.getElementById('dn-date').value,client:document.getElementById('dn-client').value,project:document.getElementById('dn-project').value,address:document.getElementById('dn-address').value,deliveredBy:document.getElementById('dn-deliveredby').value,vehicle:document.getElementById('dn-vehicle').value,ref:document.getElementById('dn-ref').value,recvName:document.getElementById('dn-recv-name').value,recvDesg:document.getElementById('dn-recv-desg').value,recvContact:document.getElementById('dn-recv-contact').value,remarks:document.getElementById('dn-remarks').value,items};
+}
+function saveDN(){const d=getDNData(); if(!d.client||!d.no){toast('Fill Client and DN No.','error');return;} const idx=DB.deliveries.findIndex(x=>x.no===d.no); if(idx>-1) DB.deliveries[idx]=d; else DB.deliveries.push(d); save(); renderDNList(); toast('Delivery Note saved!','success'); updateDashCounts();}
+function clearDN(){['dn-no','dn-date','dn-client','dn-project','dn-address','dn-deliveredby','dn-vehicle','dn-ref','dn-recv-name','dn-recv-desg','dn-recv-contact','dn-remarks'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';}); document.getElementById('dn-items-body').innerHTML=''; dnRowCount=0;}
+function renderDNList(){
+  const tbody=document.getElementById('dn-list-body');
+  if(!DB.deliveries.length){tbody.innerHTML='<tr><td colspan="5" class="no-data">No delivery notes yet.</td></tr>';return;}
+  tbody.innerHTML=DB.deliveries.map((d,i)=>`<tr><td>${d.no}</td><td>${d.client}</td><td>${d.project}</td><td>${fmt(d.date)}</td><td><button class="btn btn-success btn-sm" onclick="generateDNPDFFromData(DB.deliveries[${i}])">PDF</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('deliveries',${i},'renderDNList')">Del</button></td></tr>`).join('');
+}
+
+// ══════════════════════════════
+//  INVOICE
+// ══════════════════════════════
+let invRowCount=0;
+function newInvoice(){clearInvoice(); document.getElementById('inv-no').value=genId(DB.settings.invPrefix||'INV',DB.invoices); document.getElementById('inv-date').value=today(); document.getElementById('inv-due').value=new Date(Date.now()+30*86400000).toISOString().split('T')[0]; if(invRowCount===0){addInvRow();addInvRow();addInvRow();}}
+function addInvRow(){
+  invRowCount++;
+  const tbody=document.getElementById('inv-items-body');
+  const tr=document.createElement('tr'); tr.id='invr-'+invRowCount;
+  tr.innerHTML=`<td>${invRowCount}</td>
+    <td><input placeholder="Work description..." /></td>
+    <td><input placeholder="e.g. 100 sqft" /></td>
+    <td><input type="number" value="1" oninput="calcInvoice()" style="width:60px" /></td>
+    <td><select style="width:70px"><option>Sqft</option><option>Rmt</option><option>Nos</option><option>Lot</option><option>LS</option></select></td>
+    <td><input type="number" value="0" oninput="calcInvoice()" /></td>
+    <td class="amount-col invr-amt">0.00</td>
+    <td><button class="btn btn-danger btn-sm btn-icon" onclick="removeRow('invr-${invRowCount}','calcInvoice')">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+function calcInvoice(){
+  let sub=0;
+  document.querySelectorAll('#inv-items-body tr').forEach(tr=>{
+    const ins=tr.querySelectorAll('input'); if(ins.length<3) return;
+    const amt=num(ins[2].value)*num(ins[3].value);
+    tr.querySelector('.invr-amt').textContent=amt.toFixed(2); sub+=amt;
+  });
+  const disc=num(document.getElementById('inv-discount').value);
+  const discAmt=sub*disc/100;
+  const taxable=sub-discAmt;
+  const gstVal=document.getElementById('inv-gst-type').value;
+  let gstAmt=0; let cgst=0; let sgst=0; let igst=0;
+  if(gstVal==='18igst'){igst=taxable*0.18; gstAmt=igst; document.getElementById('inv-igst-row').style.display=''; document.getElementById('inv-cgst-row').style.display='none'; document.getElementById('inv-sgst-row').style.display='none';}
+  else if(num(gstVal)>0){cgst=taxable*num(gstVal)/200; sgst=taxable*num(gstVal)/200; gstAmt=cgst+sgst; document.getElementById('inv-igst-row').style.display='none'; document.getElementById('inv-cgst-row').style.display=''; document.getElementById('inv-sgst-row').style.display='';}
+  else {document.getElementById('inv-igst-row').style.display='none'; document.getElementById('inv-cgst-row').style.display='none'; document.getElementById('inv-sgst-row').style.display='none';}
+  document.getElementById('inv-cgst-amt').textContent=cgst.toFixed(2);
+  document.getElementById('inv-sgst-amt').textContent=sgst.toFixed(2);
+  document.getElementById('inv-igst-amt').textContent=igst.toFixed(2);
+  const prev=num(document.getElementById('inv-prev-bill').value);
+  const ret=num(document.getElementById('inv-retention').value);
+  const total=taxable+gstAmt-prev-ret;
+  document.getElementById('inv-subtotal').textContent=sub.toFixed(2);
+  document.getElementById('inv-discount-amt').textContent=discAmt.toFixed(2);
+  document.getElementById('inv-taxable').textContent=taxable.toFixed(2);
+  document.getElementById('inv-prev-deduct').textContent=prev.toFixed(2);
+  document.getElementById('inv-retention-deduct').textContent=ret.toFixed(2);
+  document.getElementById('inv-total').textContent=inr(total);
+}
+function getInvoiceData(){
+  const items=[]; document.querySelectorAll('#inv-items-body tr').forEach((tr,i)=>{const ins=tr.querySelectorAll('input');const sel=tr.querySelectorAll('select'); if(ins.length<3) return; items.push({sno:i+1,desc:ins[0].value,area:ins[1].value,qty:num(ins[2].value),unit:sel[0]?sel[0].value:'',rate:num(ins[3].value),amount:num(ins[2].value)*num(ins[3].value)});});
+  return {no:document.getElementById('inv-no').value,date:document.getElementById('inv-date').value,due:document.getElementById('inv-due').value,billType:document.getElementById('inv-bill-type').value,client:document.getElementById('inv-client').value,project:document.getElementById('inv-project').value,clientAddr:document.getElementById('inv-client-addr').value,clientGst:document.getElementById('inv-client-gst').value,ref:document.getElementById('inv-ref').value,gstType:document.getElementById('inv-gst-type').value,discount:num(document.getElementById('inv-discount').value),prevBill:num(document.getElementById('inv-prev-bill').value),retention:num(document.getElementById('inv-retention').value),payMethod:document.getElementById('inv-payment-method').value,bank:document.getElementById('inv-bank').value,items,subtotal:num(document.getElementById('inv-subtotal').textContent),taxable:num(document.getElementById('inv-taxable').textContent),cgst:num(document.getElementById('inv-cgst-amt').textContent),sgst:num(document.getElementById('inv-sgst-amt').textContent),igst:num(document.getElementById('inv-igst-amt').textContent),total:document.getElementById('inv-total').textContent,status:'Unpaid'};
+}
+function saveInvoice(){const d=getInvoiceData(); if(!d.client||!d.no){toast('Fill Client and Invoice No.','error');return;} const idx=DB.invoices.findIndex(x=>x.no===d.no); if(idx>-1) DB.invoices[idx]=d; else DB.invoices.push(d); save(); renderInvoiceList(); toast('Invoice saved!','success'); updateDashCounts();}
+function clearInvoice(){['inv-no','inv-date','inv-due','inv-client','inv-project','inv-client-addr','inv-client-gst','inv-ref','inv-bank','inv-discount','inv-prev-bill','inv-retention'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=e.type==='number'?'0':'';}); document.getElementById('inv-items-body').innerHTML=''; invRowCount=0; calcInvoice();}
+function renderInvoiceList(){
+  const tbody=document.getElementById('invoice-list-body');
+  if(!DB.invoices.length){tbody.innerHTML='<tr><td colspan="7" class="no-data">No invoices yet.</td></tr>';return;}
+  tbody.innerHTML=DB.invoices.map((inv,i)=>`<tr><td>${inv.no}</td><td>${inv.client}</td><td>${inv.project}</td><td>${fmt(inv.date)}</td><td><span class="badge badge-draft">${inv.billType}</span></td><td>${inv.total}</td><td><button class="btn btn-success btn-sm" onclick="generateInvoicePDFFromData(DB.invoices[${i}])">PDF</button> <select class="btn btn-secondary btn-sm" style="padding:4px" onchange="changeInvStatus(${i},this.value)"><option value="">Status</option><option>Unpaid</option><option>Paid</option><option>Partial</option></select> <button class="btn btn-danger btn-sm" onclick="deleteItem('invoices',${i},'renderInvoiceList')">Del</button></td></tr>`).join('');
+}
+function changeInvStatus(i,s){if(s){DB.invoices[i].status=s; save(); renderInvoiceList();}}
+
+// ══════════════════════════════
+//  PROJECTS
+// ══════════════════════════════
+function openProjectModal(idx){
+  editMode = (idx !== undefined) ? idx : null;
+  if(editMode!==null){
+    const p=DB.projects[editMode];
+    document.getElementById('pm-name').value=p.name;
+    document.getElementById('pm-client').value=p.client;
+    document.getElementById('pm-contractor').value=p.contractor||'';
+    document.getElementById('pm-location').value=p.location||'';
+    document.getElementById('pm-category').value=p.category;
+    document.getElementById('pm-status').value=p.status;
+    document.getElementById('pm-start').value=p.start;
+    document.getElementById('pm-end').value=p.end;
+    document.getElementById('pm-value').value=p.value;
+    document.getElementById('pm-progress').value=p.progress;
+    document.getElementById('pm-notes').value=p.notes||'';
+  } else {
+    ['pm-name','pm-client','pm-contractor','pm-location','pm-start','pm-end','pm-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('pm-value').value='';
+    document.getElementById('pm-progress').value='0';
+    document.getElementById('pm-status').value='Not Started';
+  }
+  openModal('modal-project');
+}
+function saveProject(){
+  const p={name:document.getElementById('pm-name').value,client:document.getElementById('pm-client').value,contractor:document.getElementById('pm-contractor').value,location:document.getElementById('pm-location').value,category:document.getElementById('pm-category').value,status:document.getElementById('pm-status').value,start:document.getElementById('pm-start').value,end:document.getElementById('pm-end').value,value:num(document.getElementById('pm-value').value),progress:num(document.getElementById('pm-progress').value),notes:document.getElementById('pm-notes').value};
+  if(!p.name){toast('Project name required','error');return;}
+  if(editMode!==null) DB.projects[editMode]=p; else DB.projects.push(p);
+  save(); closeModal('modal-project'); renderProjectList(); refreshProjectStats(); populateProjectDropdowns(); updateDashCounts(); toast('Project saved!','success');
+}
+function renderProjectList(){
+  const tbody=document.getElementById('projects-list-body');
+  if(!DB.projects.length){tbody.innerHTML='<tr><td colspan="8" class="no-data">No projects yet.</td></tr>';return;}
+  tbody.innerHTML=DB.projects.map((p,i)=>`<tr>
+    <td><strong>${p.name}</strong></td><td>${p.client}</td><td>${p.category}</td><td>${fmt(p.start)}</td><td>${fmt(p.end)}</td>
+    <td style="min-width:120px"><div style="font-size:11px;margin-bottom:2px">${p.progress}%</div><div class="progress-bar"><div class="progress-fill ${p.progress>=100?'success':p.progress>50?'':'warn'}" style="width:${p.progress}%"></div></div></td>
+    <td><span class="badge ${p.status==='Completed'?'badge-done':p.status==='In Progress'?'badge-active':p.status==='On Hold'?'badge-cancel':'badge-pending'}">${p.status}</span></td>
+    <td><button class="btn btn-info btn-sm" onclick="openProjectModal(${i})">Edit</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('projects',${i},'refreshProj')">Del</button></td></tr>`).join('');
+}
+function refreshProjectStats(){
+  document.getElementById('pm-total').textContent=DB.projects.length;
+  document.getElementById('pm-done').textContent=DB.projects.filter(p=>p.status==='Completed').length;
+  document.getElementById('pm-active').textContent=DB.projects.filter(p=>p.status==='In Progress').length;
+  document.getElementById('pm-pending').textContent=DB.projects.filter(p=>p.status==='Not Started').length;
+}
+function deleteItem(collection, idx, refreshFn){
+  if(confirm('Delete this record?')){ DB[collection].splice(idx,1); save();
+    if(refreshFn==='renderQuotationList') renderQuotationList();
+    if(refreshFn==='renderLPOList') renderLPOList();
+    if(refreshFn==='renderContractList') renderContractList();
+    if(refreshFn==='renderDNList') renderDNList();
+    if(refreshFn==='renderInvoiceList') renderInvoiceList();
+    if(refreshFn==='refreshProj'){renderProjectList();refreshProjectStats();}
+    if(refreshFn==='renderFinanceList') renderFinance();
+    if(refreshFn==='renderSalary') renderSalary();
+    if(refreshFn==='renderProgressList') renderProgressList();
+    toast('Deleted','success');
+  }
+}
+
+// ══════════════════════════════
+//  FINANCE
+// ══════════════════════════════
+let currentFinTab='all';
+function openTxModal(){
+  ['tx-date','tx-desc','tx-project','tx-amount'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('tx-date').value=today();
+  openModal('modal-tx');
+}
+function saveTransaction(){
+  const d={date:document.getElementById('tx-date').value,type:document.getElementById('tx-type').value,desc:document.getElementById('tx-desc').value,category:document.getElementById('tx-cat').value,project:document.getElementById('tx-project').value,amount:num(document.getElementById('tx-amount').value)};
+  if(!d.desc||!d.amount){toast('Fill description and amount','error');return;}
+  DB.transactions.push(d); save(); closeModal('modal-tx'); renderFinance(); toast('Transaction added!','success');
+}
+function finTab(t){
+  currentFinTab=t;
+  document.querySelectorAll('.tabs .tab-btn').forEach((b,i)=>{b.classList.toggle('active', ['all','income','expense'][i]===t);});
+  renderFinance();
+}
+function renderFinance(){
+  const income=DB.transactions.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const expense=DB.transactions.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  document.getElementById('f-income').textContent=inr(income);
+  document.getElementById('f-expense').textContent=inr(expense);
+  document.getElementById('f-balance').textContent=inr(income-expense);
+  document.getElementById('f-receivable').textContent=inr(DB.invoices.filter(i=>i.status==='Unpaid').reduce((s,inv)=>{const m=inv.total.replace(/[₹,\s]/g,''); return s+num(m);},0));
+  const list=currentFinTab==='all'?DB.transactions:DB.transactions.filter(t=>t.type===currentFinTab);
+  const tbody=document.getElementById('finance-list-body');
+  if(!list.length){tbody.innerHTML='<tr><td colspan="7" class="no-data">No transactions.</td></tr>';return;}
+  tbody.innerHTML=[...list].reverse().map((t,i)=>`<tr>
+    <td>${fmt(t.date)}</td><td>${t.desc}</td><td>${t.category}</td><td>${t.project||'-'}</td>
+    <td><span class="badge ${t.type==='income'?'badge-active':'badge-cancel'}">${t.type}</span></td>
+    <td style="font-weight:700;color:${t.type==='income'?'var(--success)':'var(--danger)'}">${inr(t.amount)}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="deleteItem('transactions',${DB.transactions.indexOf(t)},'renderFinanceList')">Del</button></td></tr>`).join('');
+}
+
+// ══════════════════════════════
+//  SALARY
+// ══════════════════════════════
+function openEmpModal(idx){
+  editMode=(idx!==undefined)?idx:null;
+  if(editMode!==null){
+    const e=DB.employees[editMode];
+    document.getElementById('emp-name').value=e.name;
+    document.getElementById('emp-desg').value=e.designation;
+    document.getElementById('emp-type').value=e.type;
+    document.getElementById('emp-rate').value=e.rate;
+    document.getElementById('emp-days').value=e.days;
+    document.getElementById('emp-net').value=e.netPay;
+    document.getElementById('emp-phone').value=e.phone||'';
+    document.getElementById('emp-status').value=e.status;
+    document.getElementById('emp-aadhar').value=e.aadhar||'';
+    document.getElementById('emp-project').value=e.project||'';
+  } else {
+    ['emp-name','emp-desg','emp-phone','emp-aadhar','emp-project'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('emp-rate').value=''; document.getElementById('emp-days').value='26';
+    document.getElementById('emp-net').value=''; document.getElementById('emp-type').value='Daily Wage';
+    document.getElementById('emp-status').value='Active';
+  }
+  openModal('modal-emp');
+}
+function calcEmpPay(){
+  const type=document.getElementById('emp-type').value;
+  const rate=num(document.getElementById('emp-rate').value);
+  const days=num(document.getElementById('emp-days').value);
+  document.getElementById('emp-net').value=(type==='Monthly'?rate:rate*days).toFixed(2);
+}
+function saveEmployee(){
+  const e={name:document.getElementById('emp-name').value,designation:document.getElementById('emp-desg').value,type:document.getElementById('emp-type').value,rate:num(document.getElementById('emp-rate').value),days:num(document.getElementById('emp-days').value),netPay:num(document.getElementById('emp-net').value),phone:document.getElementById('emp-phone').value,status:document.getElementById('emp-status').value,aadhar:document.getElementById('emp-aadhar').value,project:document.getElementById('emp-project').value};
+  if(!e.name){toast('Employee name required','error');return;}
+  if(editMode!==null) DB.employees[editMode]=e; else DB.employees.push(e);
+  save(); closeModal('modal-emp'); renderSalary(); updateDashCounts(); toast('Employee saved!','success');
+}
+function renderSalary(){
+  const active=DB.employees.filter(e=>e.status==='Active');
+  const payroll=active.reduce((s,e)=>s+e.netPay,0);
+  document.getElementById('s-total').textContent=DB.employees.length;
+  document.getElementById('s-payroll').textContent=inr(payroll);
+  document.getElementById('s-paid').textContent=inr(0);
+  document.getElementById('s-pending').textContent=inr(payroll);
+  const tbody=document.getElementById('salary-list-body');
+  if(!DB.employees.length){tbody.innerHTML='<tr><td colspan="8" class="no-data">No employees yet.</td></tr>';return;}
+  tbody.innerHTML=DB.employees.map((e,i)=>`<tr>
+    <td><strong>${e.name}</strong><br><span class="text-muted">${e.phone||''}</span></td>
+    <td>${e.designation}</td><td><span class="badge badge-pending">${e.type}</span></td>
+    <td>${e.type==='Monthly'?inr(e.rate)+'/mo':'₹'+e.rate+'/day'}</td>
+    <td>${e.days}</td><td style="font-weight:700;color:var(--gold)">${inr(e.netPay)}</td>
+    <td><span class="badge ${e.status==='Active'?'badge-active':'badge-draft'}">${e.status}</span></td>
+    <td><button class="btn btn-info btn-sm" onclick="openEmpModal(${i})">Edit</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('employees',${i},'renderSalary')">Del</button></td></tr>`).join('');
+}
+
+// ══════════════════════════════
+//  PROGRESS REPORT
+// ══════════════════════════════
+function openProgressModal(){
+  ['prog-work','prog-issues','prog-next'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('prog-pct').value='';
+  document.getElementById('prog-manpower').value='';
+  document.getElementById('prog-date').value=today();
+  populateProjectDropdowns();
+  openModal('modal-progress');
+}
+function populateProjectDropdowns(){
+  ['pr-project-sel','prog-project-sel2'].forEach(id=>{
+    const sel=document.getElementById(id); if(!sel) return;
+    const cur=sel.value;
+    sel.innerHTML='<option value="">-- Select Project --</option>'+DB.projects.map(p=>`<option value="${p.name}" ${p.name===cur?'selected':''}>${p.name}</option>`).join('');
+  });
+}
+function saveProgress(){
+  const d={project:document.getElementById('prog-project-sel2').value,date:document.getElementById('prog-date').value,work:document.getElementById('prog-work').value,pct:num(document.getElementById('prog-pct').value),manpower:num(document.getElementById('prog-manpower').value),issues:document.getElementById('prog-issues').value,next:document.getElementById('prog-next').value};
+  if(!d.project){toast('Select a project','error');return;}
+  DB.progressReports.push(d); save(); closeModal('modal-progress'); renderProgressList(); toast('Report saved!','success');
+}
+function renderProgressList(){
+  const tbody=document.getElementById('progress-list-body');
+  if(!DB.progressReports.length){tbody.innerHTML='<tr><td colspan="7" class="no-data">No progress reports yet.</td></tr>';return;}
+  tbody.innerHTML=[...DB.progressReports].reverse().map((r,i)=>`<tr>
+    <td><strong>${r.project}</strong></td><td>${fmt(r.date)}</td>
+    <td style="max-width:200px">${r.work}</td>
+    <td><div class="progress-bar"><div class="progress-fill ${r.pct>=100?'success':r.pct>60?'':'warn'}" style="width:${r.pct}%"></div></div><div style="font-size:10px;margin-top:2px">${r.pct}%</div></td>
+    <td style="max-width:150px">${r.issues||'-'}</td><td>${r.next||'-'}</td>
+    <td><button class="btn btn-success btn-sm" onclick="generateProgressPDFForReport(${DB.progressReports.length-1-i})">PDF</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('progressReports',${DB.progressReports.length-1-i},'renderProgressList')">Del</button></td></tr>`).join('');
+}
+
+// ══════════════════════════════
+//  SETTINGS
+// ══════════════════════════════
+function loadSettingsForm(){
+  const s=DB.settings;
+  document.getElementById('s-name').value=s.name||'Degrai Interiors';
+  document.getElementById('s-tagline').value=s.tagline||'';
+  document.getElementById('s-addr1').value=s.addr1||'';
+  document.getElementById('s-addr2').value=s.addr2||'';
+  document.getElementById('s-phone').value=s.phone||'';
+  document.getElementById('s-email').value=s.email||'';
+  document.getElementById('s-website').value=s.website||'';
+  document.getElementById('s-gst').value=s.gst||'';
+  document.getElementById('s-linkedin').value=s.linkedin||'';
+  document.getElementById('s-instagram').value=s.instagram||'';
+  document.getElementById('s-facebook').value=s.facebook||'';
+  document.getElementById('s-youtube').value=s.youtube||'';
+  document.getElementById('s-bank-name').value=s.bankName||'';
+  document.getElementById('s-bank-acname').value=s.bankAcName||'';
+  document.getElementById('s-bank-ac').value=s.bankAc||'';
+  document.getElementById('s-bank-ifsc').value=s.bankIfsc||'';
+  document.getElementById('s-bank-branch').value=s.bankBranch||'';
+  document.getElementById('s-qt-prefix').value=s.qtPrefix||'QT';
+  document.getElementById('s-inv-prefix').value=s.invPrefix||'INV';
+  document.getElementById('s-lpo-prefix').value=s.lpoPrefix||'LPO';
+  document.getElementById('s-ca-prefix').value=s.caPrefix||'CA';
+  document.getElementById('s-dn-prefix').value=s.dnPrefix||'DN';
+  document.getElementById('s-def-gst').value=s.defaultGst||18;
+  document.getElementById('s-default-tc').value=s.defaultTC||'';
+  document.getElementById('s-pay-terms').value=s.defaultPayTerms||'';
+}
+function saveSettings(){
+  DB.settings={
+    name:document.getElementById('s-name').value,
+    tagline:document.getElementById('s-tagline').value,
+    addr1:document.getElementById('s-addr1').value,
+    addr2:document.getElementById('s-addr2').value,
+    phone:document.getElementById('s-phone').value,
+    email:document.getElementById('s-email').value,
+    website:document.getElementById('s-website').value,
+    gst:document.getElementById('s-gst').value,
+    linkedin:document.getElementById('s-linkedin').value,
+    instagram:document.getElementById('s-instagram').value,
+    facebook:document.getElementById('s-facebook').value,
+    youtube:document.getElementById('s-youtube').value,
+    bankName:document.getElementById('s-bank-name').value,
+    bankAcName:document.getElementById('s-bank-acname').value,
+    bankAc:document.getElementById('s-bank-ac').value,
+    bankIfsc:document.getElementById('s-bank-ifsc').value,
+    bankBranch:document.getElementById('s-bank-branch').value,
+    qtPrefix:document.getElementById('s-qt-prefix').value,
+    invPrefix:document.getElementById('s-inv-prefix').value,
+    lpoPrefix:document.getElementById('s-lpo-prefix').value,
+    caPrefix:document.getElementById('s-ca-prefix').value,
+    dnPrefix:document.getElementById('s-dn-prefix').value,
+    defaultGst:num(document.getElementById('s-def-gst').value),
+    defaultTC:document.getElementById('s-default-tc').value,
+    defaultPayTerms:document.getElementById('s-pay-terms').value
+  };
+  save(); toast('Settings saved!','success');
+}
+function loadSettings(){loadSettingsForm();}
+
+// ══════════════════════════════
+//  DASHBOARD REFRESH
+// ══════════════════════════════
+function updateDashCounts(){
+  document.getElementById('d-projects').textContent=DB.projects.length;
+  const totalRev=DB.invoices.reduce((s,i)=>{const m=i.total.replace(/[₹,\s]/g,''); return s+num(m);},0);
+  document.getElementById('d-revenue').textContent=inr(totalRev);
+  document.getElementById('d-quotes').textContent=DB.quotations.filter(q=>q.status==='Draft'||q.status==='Sent').length;
+  document.getElementById('d-emp').textContent=DB.employees.filter(e=>e.status==='Active').length;
+  document.getElementById('qs-quotes').textContent=DB.quotations.length;
+  document.getElementById('qs-lpos').textContent=DB.lpos.length;
+  document.getElementById('qs-contracts').textContent=DB.contracts.length;
+  document.getElementById('qs-dn').textContent=DB.deliveries.length;
+}
+function refreshDashboard(){
+  updateDashCounts();
+  const ptbody=document.getElementById('dash-projects-table');
+  if(!DB.projects.length){ptbody.innerHTML='<tr><td colspan="4" class="no-data">No projects yet</td></tr>';}
+  else{ptbody.innerHTML=DB.projects.slice(0,5).map(p=>`<tr><td><strong>${p.name}</strong></td><td>${p.client}</td><td><div class="progress-bar"><div class="progress-fill" style="width:${p.progress}%"></div></div><span style="font-size:10px">${p.progress}%</span></td><td><span class="badge ${p.status==='Completed'?'badge-done':p.status==='In Progress'?'badge-active':'badge-pending'}">${p.status}</span></td></tr>`).join('');}
+  const itbody=document.getElementById('dash-invoices-table');
+  if(!DB.invoices.length){itbody.innerHTML='<tr><td colspan="4" class="no-data">No invoices yet</td></tr>';}
+  else{itbody.innerHTML=DB.invoices.slice(-5).reverse().map(i=>`<tr><td>${i.no}</td><td>${i.client}</td><td>${i.total}</td><td><span class="badge ${i.status==='Paid'?'badge-done':i.status==='Partial'?'badge-pending':'badge-cancel'}">${i.status}</span></td></tr>`).join('');}
+}
+
+// ══════════════════════════════
+//  PDF GENERATION ENGINE
+// ══════════════════════════════
+const {jsPDF} = window.jspdf;
+const GOLD=[132,92,1];
+const GRAY=[84,84,84];
+
+function pdfHeader(doc, title, subtitle=''){
+  const s=DB.settings;
+  // Gold bar at top
+  doc.setFillColor(...GOLD);
+  doc.rect(0,0,210,18,'F');
+  // Company name
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(14); doc.setFont('helvetica','bold');
+  doc.text((s.name||'Degrai Interiors').toUpperCase(), 14, 12);
+  // Tagline
+  doc.setFontSize(7); doc.setFont('helvetica','normal');
+  doc.text(s.tagline||'Interior Execution Specialists', 14, 16);
+  // Contact right side
+  doc.setFontSize(7);
+  doc.text(s.phone||'+91 96722 55141', 196, 9, {align:'right'});
+  doc.text(s.email||'info@interiorsdegrai.in', 196, 13, {align:'right'});
+  doc.text(s.website||'www.interiorsdegrai.in', 196, 17, {align:'right'});
+  // Address block
+  doc.setTextColor(...GRAY);
+  doc.setFontSize(8);
+  doc.text((s.addr1||'Amraiwadi, Ahmedabad') + ' | ' + (s.addr2||'Gujarat - 380038'), 14, 24);
+  // GST if set
+  if(s.gst) doc.text('GSTIN: '+s.gst, 14, 28);
+  // Title
+  doc.setTextColor(...GOLD);
+  doc.setFontSize(16); doc.setFont('helvetica','bold');
+  doc.text(title.toUpperCase(), 105, 36, {align:'center'});
+  if(subtitle){doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY); doc.text(subtitle, 105, 41, {align:'center'});}
+  // Divider
+  doc.setDrawColor(...GOLD); doc.setLineWidth(0.8);
+  doc.line(14, 44, 196, 44);
+  return 50;
+}
+
+function pdfFooter(doc){
+  const s=DB.settings; const pg=doc.internal.getNumberOfPages();
+  for(let i=1;i<=pg;i++){
+    doc.setPage(i);
+    const h=doc.internal.pageSize.height;
+    doc.setFillColor(245,233,204);
+    doc.rect(0,h-18,210,18,'F');
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.5); doc.line(0,h-18,210,h-18);
+    doc.setTextColor(...GRAY); doc.setFontSize(7); doc.setFont('helvetica','normal');
+    doc.text((s.name||'Degrai Interiors')+' | '+( s.addr1||'Amraiwadi, Ahmedabad')+', '+(s.addr2||'Gujarat 380038'), 105, h-11, {align:'center'});
+    doc.text('Ph: '+(s.phone||'')+'  |  E: '+(s.email||'')+'  |  W: '+(s.website||''), 105, h-6, {align:'center'});
+    doc.setFontSize(8); doc.setTextColor(...GOLD);
+    doc.text('Page '+i+' of '+pg, 196, h-6, {align:'right'});
+  }
+}
+
+function infoRow(doc, y, label, value, x=14, xv=70){
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...GOLD);
+  doc.text(label, x, y);
+  doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY);
+  doc.text(String(value||''), xv, y);
+  return y+5;
+}
+
+function generateQuotationPDF(){ const d=getQuoteData(); generateQuotationPDFFromData(d); }
+function generateQuotationPDFFromData(q){
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  let y=pdfHeader(doc,'Quotation');
+  // Client Info block
+  doc.setFillColor(250,247,240); doc.rect(14,y,88,36,'F');
+  doc.setFillColor(240,237,232); doc.rect(108,y,88,36,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...GOLD);
+  doc.text('CLIENT INFORMATION', 18, y+6);
+  doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY); doc.setFontSize(8);
+  doc.text('Client: '+q.client, 18, y+12);
+  doc.text('Project: '+q.project, 18, y+17);
+  doc.text('Address: '+q.address, 18, y+22);
+  doc.text('Contact: '+q.contact, 18, y+27);
+  if(q.email) doc.text('Email: '+q.email, 18, y+32);
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...GOLD);
+  doc.text('QUOTATION DETAILS', 112, y+6);
+  doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY);
+  doc.text('Quot. No.: '+q.no, 112, y+12);
+  doc.text('Date: '+fmt(q.date), 112, y+17);
+  doc.text('Valid Until: '+fmt(q.valid), 112, y+22);
+  doc.text('Category: '+q.category, 112, y+27);
+  y+=42;
+  // Items Table
+  const cols=['#','Description','Area / Unit','Qty','Unit','Rate (₹)','Amount (₹)'];
+  const rows=q.items.map(it=>[it.sno,it.desc,it.area||'-',it.qty,it.unit,num(it.rate).toFixed(2),(it.qty*it.rate).toFixed(2)]);
+  doc.autoTable({startY:y,head:[cols],body:rows,styles:{fontSize:8,cellPadding:2.5},headStyles:{fillColor:GOLD,textColor:[255,255,255],fontStyle:'bold',halign:'center'},columnStyles:{0:{halign:'center',cellWidth:8},2:{cellWidth:25},3:{halign:'center',cellWidth:12},4:{halign:'center',cellWidth:14},5:{halign:'right',cellWidth:22},6:{halign:'right',cellWidth:26}},alternateRowStyles:{fillColor:[250,247,240]},margin:{left:14,right:14}});
+  y=doc.lastAutoTable.finalY+4;
+  // Totals
+  const sub=q.items.reduce((s,i)=>s+i.qty*i.rate,0);
+  const discAmt=sub*q.discount/100;
+  const taxable=sub-discAmt;
+  const gstAmt=taxable*q.gst/100;
+  const total=taxable+gstAmt;
+  const totRows=[['','','','','','Subtotal',sub.toFixed(2)],['','','','','','Discount ('+q.discount+'%)','-'+discAmt.toFixed(2)],['','','','','','GST ('+q.gst+'%)',gstAmt.toFixed(2)],['','','','','','TOTAL',inr(total)]];
+  doc.autoTable({startY:y,body:totRows,styles:{fontSize:8},columnStyles:{0:{cellWidth:8},2:{cellWidth:25},3:{cellWidth:12},4:{cellWidth:14},5:{halign:'right',fontStyle:'bold',fillColor:[245,233,204],textColor:GOLD,cellWidth:22},6:{halign:'right',fontStyle:'bold',fillColor:[245,233,204],textColor:GOLD,cellWidth:26}},showHead:false,margin:{left:14,right:14},didParseCell:function(d){if(d.row.index===3){d.cell.styles.fontSize=10;d.cell.styles.fillColor=GOLD;d.cell.styles.textColor=[255,255,255];}}});
+  y=doc.lastAutoTable.finalY+8;
+  if(q.notes){doc.setFontSize(8); doc.setTextColor(...GRAY); doc.setFont('helvetica','bold'); doc.text('Notes / Terms:', 14, y); doc.setFont('helvetica','normal'); y+=4; const lines=doc.splitTextToSize(q.notes,180); doc.text(lines,14,y); y+=lines.length*4+4;}
+  pdfFooter(doc);
+  doc.save('Quotation_'+q.no+'.pdf');
+}
+
+function generateLPOPDF(){ const d=getLPOData(); generateLPOPDFFromData(d); }
+function generateLPOPDFFromData(l){
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  let y=pdfHeader(doc,'Local Purchase Order','LPO');
+  doc.setFillColor(250,247,240); doc.rect(14,y,88,32,'F');
+  doc.setFillColor(240,237,232); doc.rect(108,y,88,32,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...GOLD);
+  doc.text('VENDOR / SUPPLIER', 18, y+6);
+  doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY);
+  doc.text('Vendor: '+l.vendor, 18, y+12);
+  doc.text('Contact: '+(l.vendorContact||'-'), 18, y+17);
+  doc.text('Delivery Addr: '+(l.deliveryAddr||'-'), 18, y+22);
+  doc.setFont('helvetica','bold'); doc.setTextColor(...GOLD);
+  doc.text('LPO DETAILS', 112, y+6);
+  doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY);
+  doc.text('LPO No.: '+l.no, 112, y+12);
+  doc.text('Date: '+fmt(l.date), 112, y+17);
+  doc.text('Project: '+l.project, 112, y+22);
+  doc.text('Delivery Date: '+fmt(l.deliveryDate), 112, y+27);
+  y+=38;
+  const cols=['#','Material / Item','Specification','Qty','Unit','Unit Price','Amount'];
+  const rows=l.items.map(it=>[it.sno,it.desc,it.spec||'-',it.qty,it.unit,num(it.rate).toFixed(2),(it.qty*it.rate).toFixed(2)]);
+  doc.autoTable({startY:y,head:[cols],body:rows,styles:{fontSize:8,cellPadding:2.5},headStyles:{fillColor:GOLD,textColor:[255,255,255]},alternateRowStyles:{fillColor:[250,247,240]},margin:{left:14,right:14}});
+  y=doc.lastAutoTable.finalY+4;
+  const sub=l.items.reduce((s,i)=>s+i.qty*i.rate,0); const ga=sub*l.gst/100;
+  doc.autoTable({startY:y,body:[['','','','','','Subtotal',sub.toFixed(2)],['','','','','','GST ('+l.gst+'%)',ga.toFixed(2)],['','','','','','TOTAL',inr(sub+ga)]],styles:{fontSize:8},showHead:false,columnStyles:{5:{halign:'right',fontStyle:'bold',fillColor:[245,233,204],textColor:GOLD},6:{halign:'right',fontStyle:'bold',fillColor:[245,233,204],textColor:GOLD}},margin:{left:14,right:14}});
+  y=doc.lastAutoTable.finalY+8;
+  doc.setFontSize(8); doc.setTextColor(...GRAY);
+  doc.setFont('helvetica','bold'); doc.text('Payment Terms: ', 14, y); doc.setFont('helvetica','normal'); doc.text(l.paymentTerms||'-', 50, y); y+=6;
+  if(l.notes){doc.setFont('helvetica','bold'); doc.text('Instructions: ', 14, y); doc.setFont('helvetica','normal'); y+=4; const ln=doc.splitTextToSize(l.notes,180); doc.text(ln,14,y); y+=ln.length*4+4;}
+  pdfFooter(doc);
+  doc.save('LPO_'+l.no+'.pdf');
+}
+
+function generateContractPDF(){ const d=getContractData(); generateContractPDFFromData(d); }
+function generateContractPDFFromData(c){
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  let y=pdfHeader(doc,'Contract Agreement','Sub-Contract for Interior Execution Work');
+  // Parties
+  doc.setFillColor(245,233,204); doc.rect(14,y,182,8,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...GOLD);
+  doc.text('THIS CONTRACT AGREEMENT is entered into between:', 105, y+5, {align:'center'});
+  y+=12;
+  doc.setFontSize(8); doc.setTextColor(...GRAY);
+  doc.setFont('helvetica','bold'); doc.text('PARTY A (Sub-Contractor):', 14, y);
+  doc.setFont('helvetica','normal'); doc.text(DB.settings.name+', '+DB.settings.addr1+', '+DB.settings.addr2, 60, y); y+=5;
+  doc.setFont('helvetica','bold'); doc.text('PARTY B (Client / Main Contractor):', 14, y);
+  doc.setFont('helvetica','normal'); doc.text(c.client+(c.contractor?' / '+c.contractor:''), 75, y); y+=5;
+  doc.setFont('helvetica','bold'); doc.text('Project Name:', 14, y);
+  doc.setFont('helvetica','normal'); doc.text(c.project+' | Site: '+c.site, 46, y); y+=5;
+  doc.setFont('helvetica','bold'); doc.text('Contract Period:', 14, y);
+  doc.setFont('helvetica','normal'); doc.text(fmt(c.start)+' to '+fmt(c.end), 50, y);
+  doc.setFont('helvetica','bold'); doc.text('Contract Value:', 120, y);
+  doc.setFont('helvetica','normal'); doc.setTextColor(...GOLD); doc.text(inr(c.value), 152, y); doc.setTextColor(...GRAY); y+=8;
+  // Scope
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...GOLD);
+  doc.text('SCOPE OF WORK', 14, y); y+=4;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...GRAY);
+  const sc=doc.splitTextToSize(c.scope||'As per detailed BOQ and drawings.', 182);
+  doc.text(sc,14,y); y+=sc.length*4+6;
+  // Payment Schedule
+  if(c.payments && c.payments.length){
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...GOLD);
+    doc.text('PAYMENT SCHEDULE', 14, y); y+=4;
+    doc.autoTable({startY:y,head:[['#','Milestone','Percentage','Amount (₹)','Due Date']],body:c.payments.map((p,i)=>[i+1,p.milestone||'-',p.pct+'%',inr(p.amount),fmt(p.dueDate)||'-']),styles:{fontSize:8},headStyles:{fillColor:GOLD,textColor:[255,255,255]},alternateRowStyles:{fillColor:[250,247,240]},margin:{left:14,right:14}});
+    y=doc.lastAutoTable.finalY+6;
+  }
+  // T&Cs
+  if(c.tcs && c.tcs.length){
+    if(y>240){ doc.addPage(); y=20; }
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...GOLD);
+    doc.text('TERMS & CONDITIONS', 14, y); y+=4;
+    c.tcs.forEach((t,i)=>{
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...GRAY);
+      const txt=doc.splitTextToSize((i+1)+'. '+t, 180);
+      if(y+txt.length*4>270){doc.addPage(); y=20;}
+      doc.text(txt,14,y); y+=txt.length*4+2;
+    });
+  }
+  // Signature block
+  if(y>250){doc.addPage(); y=20;}
+  y+=8;
+  doc.setFillColor(245,233,204); doc.rect(14,y,182,28,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...GOLD);
+  doc.text('SIGNATORIES', 105, y+5, {align:'center'});
+  doc.setTextColor(...GRAY);
+  doc.text('For '+DB.settings.name+':', 20, y+14); doc.line(20,y+24,80,y+24);
+  doc.text('Authorized Signatory', 20, y+27);
+  doc.text('For '+c.client+':', 110, y+14); doc.line(110,y+24,190,y+24);
+  doc.text('Authorized Signatory', 110, y+27);
+  pdfFooter(doc);
+  doc.save('Contract_'+c.no+'.pdf');
+}
+
+function generateDNPDF(){ const d=getDNData(); generateDNPDFFromData(d); }
+function generateDNPDFFromData(dn){
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  let y=pdfHeader(doc,'Delivery Note');
+  doc.setFillColor(250,247,240); doc.rect(14,y,88,36,'F');
+  doc.setFillColor(240,237,232); doc.rect(108,y,88,36,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...GOLD);
+  doc.text('DELIVERY TO', 18, y+6);
+  doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY);
+  doc.text('Client: '+dn.client, 18, y+12);
+  doc.text('Project: '+dn.project, 18, y+17);
+  doc.text('Address: '+dn.address, 18, y+22);
+  doc.text('Reference: '+(dn.ref||'-'), 18, y+27);
+  doc.setFont('helvetica','bold'); doc.setTextColor(...GOLD);
+  doc.text('DELIVERY DETAILS', 112, y+6);
+  doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY);
+  doc.text('DN No.: '+dn.no, 112, y+12);
+  doc.text('Date: '+fmt(dn.date), 112, y+17);
+  doc.text('Delivered By: '+(dn.deliveredBy||'-'), 112, y+22);
+  doc.text('Vehicle No.: '+(dn.vehicle||'-'), 112, y+27);
+  y+=42;
+  doc.autoTable({startY:y,head:[['#','Item Description','Qty','Unit','Condition','Remarks']],body:dn.items.map(it=>[it.sno,it.desc,it.qty,it.unit,it.condition,it.remarks]),styles:{fontSize:8,cellPadding:2.5},headStyles:{fillColor:GOLD,textColor:[255,255,255]},alternateRowStyles:{fillColor:[250,247,240]},margin:{left:14,right:14}});
+  y=doc.lastAutoTable.finalY+10;
+  // Receiver block
+  doc.setFillColor(245,233,204); doc.rect(14,y,182,32,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...GOLD);
+  doc.text('RECEIPT ACKNOWLEDGEMENT', 105, y+6, {align:'center'});
+  doc.setFontSize(8); doc.setTextColor(...GRAY); doc.setFont('helvetica','normal');
+  doc.text('Received By: '+(dn.recvName||'_________________'), 20, y+13);
+  doc.text('Designation: '+(dn.recvDesg||'_________________'), 20, y+19);
+  doc.text('Contact: '+(dn.recvContact||'_________________'), 20, y+25);
+  doc.text('Signature: _____________________', 110, y+13);
+  doc.text('Date: _____________________', 110, y+19);
+  if(dn.remarks){ y+=36; doc.setFontSize(8); doc.text('Remarks: '+dn.remarks, 14, y); }
+  pdfFooter(doc);
+  doc.save('DeliveryNote_'+dn.no+'.pdf');
+}
+
+function generateInvoicePDF(){ const d=getInvoiceData(); generateInvoicePDFFromData(d); }
+function generateInvoicePDFFromData(inv){
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  let y=pdfHeader(doc,'Tax Invoice',inv.billType||'');
+  doc.setFillColor(250,247,240); doc.rect(14,y,88,40,'F');
+  doc.setFillColor(240,237,232); doc.rect(108,y,88,40,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...GOLD);
+  doc.text('BILL TO', 18, y+6);
+  doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY);
+  doc.text('Client: '+inv.client, 18, y+12);
+  doc.text('Project: '+inv.project, 18, y+17);
+  const addrLines=doc.splitTextToSize('Address: '+(inv.clientAddr||'-'), 84);
+  doc.text(addrLines, 18, y+22);
+  if(inv.clientGst) doc.text('GSTIN: '+inv.clientGst, 18, y+32);
+  doc.setFont('helvetica','bold'); doc.setTextColor(...GOLD);
+  doc.text('INVOICE DETAILS', 112, y+6);
+  doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY);
+  doc.text('Invoice No.: '+inv.no, 112, y+12);
+  doc.text('Invoice Date: '+fmt(inv.date), 112, y+17);
+  doc.text('Due Date: '+fmt(inv.due), 112, y+22);
+  doc.text('Ref (LPO/PO): '+(inv.ref||'-'), 112, y+27);
+  if(DB.settings.gst) doc.text('Our GSTIN: '+DB.settings.gst, 112, y+32);
+  y+=46;
+  const cols=['#','Description','Area','Qty','Unit','Rate (₹)','Amount (₹)'];
+  const rows=inv.items.map(it=>[it.sno,it.desc,it.area||'-',it.qty,it.unit,num(it.rate).toFixed(2),(it.qty*it.rate).toFixed(2)]);
+  doc.autoTable({startY:y,head:[cols],body:rows,styles:{fontSize:8,cellPadding:2.5},headStyles:{fillColor:GOLD,textColor:[255,255,255]},alternateRowStyles:{fillColor:[250,247,240]},margin:{left:14,right:14}});
+  y=doc.lastAutoTable.finalY+4;
+  const taxRows=[];
+  taxRows.push(['','','','','','Subtotal (₹)',inv.subtotal.toFixed(2)]);
+  if(inv.discount>0) taxRows.push(['','','','','','Discount','- '+( inv.subtotal*inv.discount/100).toFixed(2)]);
+  taxRows.push(['','','','','','Taxable Amount (₹)',inv.taxable.toFixed(2)]);
+  if(inv.cgst>0){taxRows.push(['','','','','','CGST (9%)',inv.cgst.toFixed(2)]); taxRows.push(['','','','','','SGST (9%)',inv.sgst.toFixed(2)]);}
+  if(inv.igst>0) taxRows.push(['','','','','','IGST (18%)',inv.igst.toFixed(2)]);
+  if(inv.prevBill>0) taxRows.push(['','','','','','Less: Previous Bill','- '+inv.prevBill.toFixed(2)]);
+  if(inv.retention>0) taxRows.push(['','','','','','Less: Retention','- '+inv.retention.toFixed(2)]);
+  taxRows.push(['','','','','','NET PAYABLE',inv.total]);
+  doc.autoTable({startY:y,body:taxRows,styles:{fontSize:8},showHead:false,columnStyles:{5:{halign:'right',fontStyle:'bold',fillColor:[245,233,204],textColor:GOLD},6:{halign:'right',fontStyle:'bold',fillColor:[245,233,204],textColor:GOLD}},margin:{left:14,right:14},didParseCell:function(d){if(d.row.index===taxRows.length-1){d.cell.styles.fontSize=10;d.cell.styles.fillColor=GOLD;d.cell.styles.textColor=[255,255,255];}}});
+  y=doc.lastAutoTable.finalY+6;
+  if(inv.bank){
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...GOLD);
+    doc.text('BANK DETAILS FOR PAYMENT:', 14, y); y+=4;
+    doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY);
+    const bankLines=doc.splitTextToSize(inv.bank, 130);
+    doc.text(bankLines, 14, y); y+=bankLines.length*4+4;
+  }
+  if(y>250){doc.addPage(); y=20;}
+  doc.setFillColor(245,233,204); doc.rect(14,y,182,20,'F');
+  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...GRAY);
+  doc.text('This is a computer-generated invoice.', 18, y+6);
+  doc.text('For '+DB.settings.name, 18, y+11);
+  doc.text('Authorized Signatory', 18, y+16);
+  doc.text('Receiver Signature & Stamp: _____________________________', 100, y+14);
+  pdfFooter(doc);
+  doc.save('Invoice_'+inv.no+'.pdf');
+}
+
+function generatePayrollPDF(){
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const d=new Date(); const mon=d.toLocaleString('default',{month:'long'})+' '+d.getFullYear();
+  let y=pdfHeader(doc,'Payroll Statement',mon);
+  doc.autoTable({startY:y,head:[['#','Name','Designation','Type','Rate','Days','Net Pay (₹)','Status']],body:DB.employees.map((e,i)=>[i+1,e.name,e.designation,e.type,e.type==='Monthly'?inr(e.rate):e.rate+'/day',e.days,inr(e.netPay),e.status]),styles:{fontSize:8},headStyles:{fillColor:GOLD,textColor:[255,255,255]},alternateRowStyles:{fillColor:[250,247,240]},margin:{left:14,right:14}});
+  y=doc.lastAutoTable.finalY+6;
+  const total=DB.employees.reduce((s,e)=>s+e.netPay,0);
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...GOLD);
+  doc.text('Total Payroll: '+inr(total), 196, y, {align:'right'});
+  pdfFooter(doc);
+  doc.save('Payroll_'+mon.replace(' ','_')+'.pdf');
+}
+
+function generateProgressPDFForReport(idx){
+  const r=DB.progressReports[idx]; generateProgressPDFData(r);
+}
+function generateProgressPDF(){
+  const projName=document.getElementById('pr-project-sel').value;
+  const date=document.getElementById('pr-date').value;
+  if(!projName){toast('Select a project','error');return;}
+  const reports=DB.progressReports.filter(r=>r.project===projName);
+  if(!reports.length){toast('No reports for this project','error');return;}
+  generateProgressPDFData(reports[reports.length-1]);
+}
+function generateProgressPDFData(r){
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  let y=pdfHeader(doc,'Progress Report');
+  y=infoRow(doc,y,'Project:',r.project);
+  y=infoRow(doc,y,'Date:',fmt(r.date));
+  y=infoRow(doc,y,'Completion:',r.pct+'%');
+  y=infoRow(doc,y,'Manpower:',r.manpower+' workers');
+  y+=4;
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...GOLD);
+  doc.text('WORK COMPLETED', 14, y); y+=4;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...GRAY);
+  const wl=doc.splitTextToSize(r.work||'-',182); doc.text(wl,14,y); y+=wl.length*4+6;
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...GOLD);
+  doc.text('ISSUES / CHALLENGES', 14, y); y+=4;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...GRAY);
+  const il=doc.splitTextToSize(r.issues||'None reported',182); doc.text(il,14,y); y+=il.length*4+6;
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...GOLD);
+  doc.text('NEXT STEPS / PLAN', 14, y); y+=4;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...GRAY);
+  const nl=doc.splitTextToSize(r.next||'-',182); doc.text(nl,14,y); y+=nl.length*4+10;
+  // Progress bar visual
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...GOLD);
+  doc.text('OVERALL PROGRESS: '+r.pct+'%', 14, y); y+=4;
+  doc.setFillColor(220,212,200); doc.rect(14,y,182,6,'F');
+  doc.setFillColor(...GOLD); doc.rect(14,y,182*r.pct/100,6,'F');
+  pdfFooter(doc);
+  doc.save('ProgressReport_'+r.project.replace(/\s+/g,'_')+'_'+r.date+'.pdf');
+}
+
+// ══════════════════════════════
+//  INIT
+// ══════════════════════════════
+document.addEventListener('DOMContentLoaded', ()=>{
+  checkSession();
+  loadDB();
+  newQuotation();
+  newLPO();
+  newContract();
+  newDN();
+  newInvoice();
+  loadSettingsForm();
+  refreshDashboard();
+  renderLPOList();
+  renderContractList();
+  renderDNList();
+  renderInvoiceList();
+  // Set today date fields
+  [].forEach.call(document.querySelectorAll('input[type=date]'), el => { if(!el.value) el.value=today(); });
+});
+
+
+// ══════════════════════════════
+//  PASSWORD / LOCK SYSTEM
+// ══════════════════════════════
+const DEFAULT_PASSWORD = 'degrai2024';
+let lockEyeVisible = false;
+let lockAttempts = 0;
+let lockUntil = 0;
+
+function getStoredPassword() {
+  return localStorage.getItem('degrai_password') || DEFAULT_PASSWORD;
+}
+
+function tryUnlock() {
+  const now = Date.now();
+  if (lockUntil > now) {
+    const secs = Math.ceil((lockUntil - now) / 1000);
+    showLockError('Too many attempts. Try again in ' + secs + 's');
+    return;
+  }
+  const input = document.getElementById('lock-pwd').value;
+  if (!input) { showLockError('Please enter a password'); return; }
+  if (input === getStoredPassword()) {
+    lockAttempts = 0;
+    document.getElementById('lock-screen').classList.add('hidden');
+    document.getElementById('lock-error').textContent = '';
+    document.getElementById('lock-pwd').value = '';
+    updateLockDots('');
+    sessionStorage.setItem('degrai_unlocked', '1');
+  } else {
+    lockAttempts++;
+    document.getElementById('lock-pwd').value = '';
+    updateLockDots('');
+    if (lockAttempts >= 5) {
+      lockUntil = Date.now() + 30000;
+      showLockError('Too many attempts. Locked for 30 seconds.');
+      lockAttempts = 0;
+    } else {
+      showLockError('Incorrect password. ' + (5 - lockAttempts) + ' attempts left.');
+    }
+    // Shake animation
+    const card = document.querySelector('.lock-card');
+    card.style.animation = 'shake 0.4s ease';
+    setTimeout(() => card.style.animation = '', 400);
+  }
+}
+
+function lockApp() {
+  if (!confirm('Lock the admin panel?')) return;
+  sessionStorage.removeItem('degrai_unlocked');
+  document.getElementById('lock-screen').classList.remove('hidden');
+  document.getElementById('lock-pwd').value = '';
+  updateLockDots('');
+  document.getElementById('lock-error').textContent = '';
+  setTimeout(() => document.getElementById('lock-pwd').focus(), 100);
+}
+
+function showLockError(msg) {
+  const el = document.getElementById('lock-error');
+  el.textContent = msg;
+  setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, 3500);
+}
+
+function updateLockDots(val) {
+  const len = val ? val.length : 0;
+  for (let i = 1; i <= 6; i++) {
+    const dot = document.getElementById('ld-' + i);
+    if (dot) dot.classList.toggle('filled', i <= len);
+  }
+}
+
+function toggleLockEye() {
+  lockEyeVisible = !lockEyeVisible;
+  const inp = document.getElementById('lock-pwd');
+  const eye = document.querySelector('.lock-eye');
+  inp.type = lockEyeVisible ? 'text' : 'password';
+  eye.textContent = lockEyeVisible ? '🙈' : '👁️';
+}
+
+// Check session on load
+function checkSession() {
+  if (sessionStorage.getItem('degrai_unlocked') === '1') {
+    document.getElementById('lock-screen').classList.add('hidden');
+  } else {
+    document.getElementById('lock-screen').classList.remove('hidden');
+    setTimeout(() => document.getElementById('lock-pwd').focus(), 300);
+  }
+}
+
+// Change password from settings
+function changeAdminPassword() {
+  const curr = prompt('Enter current password:');
+  if (!curr) return;
+  if (curr !== getStoredPassword()) { toast('Incorrect current password', 'error'); return; }
+  const newp = prompt('Enter new password (min 6 chars):');
+  if (!newp || newp.length < 6) { toast('Password too short (min 6 chars)', 'error'); return; }
+  const conf = prompt('Confirm new password:');
+  if (newp !== conf) { toast('Passwords do not match', 'error'); return; }
+  localStorage.setItem('degrai_password', newp);
+  toast('Password changed successfully!', 'success');
+}
+
+// ══════════════════════════════
+//  MOBILE SIDEBAR
+// ══════════════════════════════
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const ham = document.getElementById('hamburger');
+  const isOpen = sidebar.classList.contains('open');
+  if (isOpen) {
+    closeSidebar();
+  } else {
+    sidebar.classList.add('open');
+    overlay.classList.add('open');
+    ham.classList.add('open');
+    document.body.classList.add('sidebar-open');
+  }
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+  document.getElementById('hamburger').classList.remove('open');
+  document.body.classList.remove('sidebar-open');
+}
+
+// Close sidebar on nav click (mobile)
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    if (window.innerWidth <= 768) closeSidebar();
+  });
+});
+
+// Shake animation
+const shakeStyle = document.createElement('style');
+shakeStyle.textContent = '@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-10px)} 40%{transform:translateX(10px)} 60%{transform:translateX(-8px)} 80%{transform:translateX(8px)} }';
+document.head.appendChild(shakeStyle);
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click', e=>{ if(e.target===o) o.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
