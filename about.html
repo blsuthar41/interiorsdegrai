@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="apple-touch-icon" href="logo.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>About Us | Degrai Interiors – Ahmedabad</title>
   <meta name="description" content="Learn about Degrai Interiors – Ahmedabad's trusted interior execution specialists since 2020. Our story, values, and team." />
@@ -145,13 +147,14 @@ p  { color: var(--charcoal); line-height: 1.75; }
   top: 0; left: 0; right: 0;
   z-index: 1000;
   padding: 20px 0;
+  background: rgba(250,250,248,0.98);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 1px 0 rgba(132,92,1,0.08);
   transition: var(--transition);
 }
 #navbar.scrolled {
-  background: rgba(250,250,248,0.97);
-  backdrop-filter: blur(12px);
   padding: 12px 0;
-  box-shadow: 0 2px 24px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 24px rgba(0,0,0,0.1);
 }
 .nav-inner {
   display: flex;
@@ -166,6 +169,7 @@ p  { color: var(--charcoal); line-height: 1.75; }
 .nav-logo-img {
   width: 44px;
   height: 44px;
+  object-fit: contain;
 }
 .nav-logo-text .brand-main {
   display: block;
@@ -364,7 +368,7 @@ p  { color: var(--charcoal); line-height: 1.75; }
   padding: 7px 18px;
   border-radius: 2px;
   margin-bottom: 24px;
-  animation: fadeUp 0.8s ease both;
+  
 }
 .hero-title {
   color: var(--white);
@@ -373,7 +377,7 @@ p  { color: var(--charcoal); line-height: 1.75; }
   letter-spacing: -0.02em;
   line-height: 1.06;
   margin-bottom: 20px;
-  animation: fadeUp 0.9s ease 0.1s both;
+  
 }
 .hero-title span { color: var(--gold-dim); }
 .hero-tagline {
@@ -383,20 +387,20 @@ p  { color: var(--charcoal); line-height: 1.75; }
   font-style: italic;
   margin-bottom: 14px;
   letter-spacing: 0.06em;
-  animation: fadeUp 1s ease 0.18s both;
+  
 }
 .hero-desc {
   font-size: 1rem;
   color: rgba(255,255,255,0.65);
   max-width: 520px;
   margin-bottom: 38px;
-  animation: fadeUp 1s ease 0.25s both;
+  
 }
 .hero-actions {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
-  animation: fadeUp 1s ease 0.32s both;
+  
 }
 .hero-stats {
   position: absolute;
@@ -439,7 +443,7 @@ p  { color: var(--charcoal); line-height: 1.75; }
   display: block;
 }
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(28px); }
+  from { opacity: 1; transform: translateY(0); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -1370,13 +1374,12 @@ p  { color: var(--charcoal); line-height: 1.75; }
    SCROLL ANIMATIONS
    ============================================================ */
 .reveal {
-  opacity: 0;
-  transform: translateY(32px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
+  opacity: 1;
+  transform: none;
 }
 .reveal.visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
 }
 .reveal-delay-1 { transition-delay: 0.1s; }
 .reveal-delay-2 { transition-delay: 0.2s; }
@@ -1440,7 +1443,7 @@ p  { color: var(--charcoal); line-height: 1.75; }
   .timeline-item:nth-child(even) .tl-content { grid-column: 2; }
 }
 
-@media (max-width: 620px) {
+@media (max-width: 768px) {
   .nav-links { display: none; }
   .nav-phone { display: none; }
   .hamburger { display: flex; }
@@ -1473,12 +1476,7 @@ p  { color: var(--charcoal); line-height: 1.75; }
 <nav id="navbar">
   <div class="container nav-inner">
     <a href="index.html" class="nav-logo">
-      <svg class="nav-logo-img" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="44" height="44" rx="4" fill="#845C01"/>
-        <path d="M10 10 H20 Q32 10 32 22 Q32 34 20 34 H10 Z" fill="none" stroke="#FAFAF8" stroke-width="2.5"/>
-        <line x1="10" y1="22" x2="28" y2="22" stroke="#FAFAF8" stroke-width="2"/>
-        <circle cx="34" cy="34" r="2.5" fill="#c49a3c"/>
-      </svg>
+      <img src="logo.png" class="nav-logo-img" alt="Degrai Interiors Logo" />
       <div class="nav-logo-text">
         <span class="brand-main">Degrai</span>
         <span class="brand-sub">Interiors</span>
@@ -1682,7 +1680,7 @@ p  { color: var(--charcoal); line-height: 1.75; }
     <div class="footer-grid">
       <div class="footer-brand">
         <a href="index.html" class="nav-logo">
-          <svg class="nav-logo-img" viewBox="0 0 44 44" fill="none"><rect width="44" height="44" rx="4" fill="#845C01"/><path d="M10 10 H20 Q32 10 32 22 Q32 34 20 34 H10 Z" fill="none" stroke="#FAFAF8" stroke-width="2.5"/><line x1="10" y1="22" x2="28" y2="22" stroke="#FAFAF8" stroke-width="2"/><circle cx="34" cy="34" r="2.5" fill="#c49a3c"/></svg>
+          <img src="logo.png" class="nav-logo-img" alt="Degrai Interiors Logo" />
           <div class="nav-logo-text"><span class="brand-main">Degrai</span><span class="brand-sub">Interiors</span></div>
         </a>
         <p>Where Design Meets Flawless Execution. Interior execution specialists in Ahmedabad since 2020.</p>
@@ -1776,15 +1774,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /* ── Reveal on Scroll ── */
   const reveals = document.querySelectorAll('.reveal');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.12 });
-  reveals.forEach(el => observer.observe(el));
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.06, rootMargin: '0px 0px -40px 0px' });
+    reveals.forEach(el => observer.observe(el));
+  } else {
+    // Fallback: show all immediately
+    reveals.forEach(el => el.classList.add('visible'));
+  }
+  // Safety net: force-show anything still hidden after 1.2s
+  setTimeout(() => {
+    document.querySelectorAll('.reveal:not(.visible)').forEach(el => el.classList.add('visible'));
+  }, 1200);
 
   /* ── Counter Animation ── */
   function animateCounter(el) {
@@ -1921,13 +1928,6 @@ document.addEventListener('DOMContentLoaded', function () {
       if (target) {
         e.preventDefault();
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    });
-  });
-
-  /* ── Back to top on logo click ── */
-  document.querySelectorAll('.nav-logo').forEach(el => {
-    el.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   });
 
 });
