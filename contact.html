@@ -368,7 +368,8 @@ p    { line-height: 1.82; font-weight: 300; }
   text-transform: uppercase; color: rgba(255,255,255,.42);
   margin-bottom: 8px; font-weight: 700;
 }
-.fg input,
+/* Target only text-like inputs — exclude checkboxes/radios */
+.fg input:not([type=checkbox]):not([type=radio]),
 .fg select,
 .fg textarea {
   width: 100%;
@@ -384,9 +385,9 @@ p    { line-height: 1.82; font-weight: 300; }
   appearance: none;
   -webkit-appearance: none;
 }
-.fg input::placeholder,
+.fg input:not([type=checkbox]):not([type=radio])::placeholder,
 .fg textarea::placeholder { color: rgba(255,255,255,.22); }
-.fg input:focus,
+.fg input:not([type=checkbox]):not([type=radio]):focus,
 .fg select:focus,
 .fg textarea:focus {
   border-color: var(--gold);
@@ -402,26 +403,57 @@ p    { line-height: 1.82; font-weight: 300; }
 .fg select option { background: var(--d2); color: #fff; }
 .fg textarea { resize: vertical; min-height: 120px; }
 
-/* Checkboxes — services */
+/* ── Checkboxes — Services Required ── */
 .chk-grid {
   display: grid; grid-template-columns: 1fr 1fr;
-  gap: 8px; margin-top: 8px;
+  gap: 10px; margin-top: 10px;
 }
 .chk-item {
-  display: flex; align-items: center; gap: 9px;
-  font-size: 11px; color: rgba(255,255,255,.5);
-  cursor: pointer; letter-spacing: .04em;
-  transition: color .3s;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 11px; color: rgba(255,255,255,.55);
+  cursor: pointer; letter-spacing: .06em; text-transform: uppercase;
+  font-weight: 600;
+  padding: 10px 12px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.08);
+  transition: all .25s;
+  user-select: none;
 }
-.chk-item:hover { color: var(--gl); }
+.chk-item:hover {
+  color: var(--gl);
+  background: rgba(139,105,20,.08);
+  border-color: rgba(139,105,20,.3);
+}
 .chk-item input[type=checkbox] {
-  width: 16px; height: 16px; padding: 0;
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(139,105,20,.3);
-  cursor: pointer; flex-shrink: 0;
+  /* Reset all inherited styles from .fg input rule */
+  all: unset;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px;
+  min-height: 16px;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 1.5px solid rgba(139,105,20,.5) !important;
+  background: rgba(255,255,255,.04) !important;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: inline-block;
+  position: relative;
+  transition: all .25s;
+  appearance: auto !important;
+  -webkit-appearance: checkbox !important;
   accent-color: var(--gold);
+  box-sizing: border-box;
 }
-.chk-item input:focus { box-shadow: none; }
+.chk-item input[type=checkbox]:checked {
+  background: var(--gold) !important;
+  border-color: var(--gold) !important;
+}
+.chk-item:has(input:checked) {
+  color: var(--gl);
+  background: rgba(139,105,20,.1);
+  border-color: rgba(139,105,20,.4);
+}
 
 /* Submit */
 .fsubmit {
@@ -808,11 +840,16 @@ footer { background: var(--black); color: #fff; padding: 80px 0 0; }
       <div class="cform-wrap fade">
         <div class="cform-title">Project Estimate Request</div>
         <div class="cform-sub">Fill in your details — we'll respond within 24 hours with a detailed quote</div>
+        <!-- SETUP NOTICE — remove after Formspree is configured -->
+        <div id="setupNotice" style="background:rgba(139,105,20,.12);border:1px solid rgba(139,105,20,.3);color:var(--gl);padding:12px 16px;font-size:11px;line-height:1.7;letter-spacing:.05em;margin-bottom:22px;display:none">
+          <i class="fas fa-info-circle" style="margin-right:7px"></i>
+          <strong>To activate this form:</strong> Go to <a href="https://formspree.io" target="_blank" style="color:#fff;text-decoration:underline">formspree.io</a>, create a free form for <strong>info@interiorsdegrai.in</strong>, copy your Form ID, and replace <code style="background:rgba(255,255,255,.08);padding:1px 5px">xyzabcde</code> in the form's <code style="background:rgba(255,255,255,.08);padding:1px 5px">action</code> attribute.
+        </div>
 
         <!-- THE FORM — connected to Formspree -->
         <form
           id="estimateForm"
-          action="https://formspree.io/f/YOUR_FORM_ID"
+          action="https://formspree.io/f/xyzabcde"
           method="POST"
           novalidate
         >
@@ -1163,6 +1200,15 @@ const obs = new IntersectionObserver(entries => {
 }, { threshold: 0.1, rootMargin: '0px 0px -36px 0px' });
 document.querySelectorAll('.fade').forEach(el => obs.observe(el));
 
+// ── SETUP NOTICE: show if Formspree not yet configured ──
+(function() {
+  const action = document.getElementById('estimateForm').getAttribute('action') || '';
+  if (action.includes('xyzabcde') || action.includes('YOUR_FORM_ID')) {
+    const notice = document.getElementById('setupNotice');
+    if (notice) notice.style.display = 'block';
+  }
+})();
+
 // ── FAQ ACCORDION ──
 document.querySelectorAll('.faq-q').forEach(q => {
   q.addEventListener('click', () => {
@@ -1174,30 +1220,53 @@ document.querySelectorAll('.faq-q').forEach(q => {
 });
 
 // ── FORM SUBMIT (Formspree AJAX) ──
-const form = document.getElementById('estimateForm');
-const submitBtn = document.getElementById('submitBtn');
+const form        = document.getElementById('estimateForm');
+const submitBtn   = document.getElementById('submitBtn');
 const formSuccess = document.getElementById('form-success');
+
+function showFormError(msg) {
+  let box = document.getElementById('formErrorBox');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'formErrorBox';
+    box.style.cssText = 'background:rgba(200,60,60,.12);border:1px solid rgba(200,60,60,.35);color:#ff9090;padding:14px 18px;font-size:12px;line-height:1.75;letter-spacing:.04em;margin-bottom:18px;';
+    form.insertBefore(box, form.firstChild);
+  }
+  box.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:8px;color:#e05050"></i>' + msg;
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  // Basic validation
+  // Clear previous error
+  const prevErr = document.getElementById('formErrorBox');
+  if (prevErr) prevErr.remove();
+
+  // Validation
   const name  = form.querySelector('[name="name"]').value.trim();
   const phone = form.querySelector('[name="phone"]').value.trim();
   const city  = form.querySelector('[name="city"]').value;
   const type  = form.querySelector('[name="project_type"]').value;
 
   if (!name || !phone || !city || !type) {
-    alert('Please fill in all required fields (Name, Phone, City, Project Type).');
+    showFormError('Please fill in all required fields: <strong>Name, Phone, City</strong> and <strong>Project Type</strong>.');
+    return;
+  }
+
+  // Check Formspree is configured (replace xyzabcde with your real ID)
+  const action = form.getAttribute('action') || '';
+  if (!action || action.includes('xyzabcde') || action.includes('YOUR_FORM_ID')) {
+    showFormError('Form not yet configured. Please contact us directly at <strong>+91 96722 55141</strong> or <a href="mailto:info@interiorsdegrai.in" style="color:var(--gl)">info@interiorsdegrai.in</a>');
     return;
   }
 
   submitBtn.disabled = true;
-  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…';
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>&nbsp; Sending…';
 
   try {
     const data = new FormData(form);
-    const res  = await fetch(form.action, {
+    const res  = await fetch(action, {
       method:  'POST',
       body:    data,
       headers: { 'Accept': 'application/json' }
@@ -1206,25 +1275,26 @@ form.addEventListener('submit', async (e) => {
     if (res.ok) {
       form.style.display = 'none';
       formSuccess.style.display = 'block';
-      // Scroll to success message
       formSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
-      throw new Error('Server error');
+      const json = await res.json().catch(() => ({}));
+      const msg  = (json.errors || []).map(err => err.message).join(', ') || 'Submission failed (status ' + res.status + ').';
+      throw new Error(msg);
     }
   } catch (err) {
     submitBtn.disabled = false;
     submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Estimate Request';
-    alert('Something went wrong. Please call us directly at +91 96722 55141 or WhatsApp us.');
+    showFormError('Error: ' + err.message + '<br>Please contact us at <strong>+91 96722 55141</strong> or email <a href="mailto:info@interiorsdegrai.in" style="color:var(--gl)">info@interiorsdegrai.in</a>');
   }
 });
 
-// ── FORM: Real-time validation feedback ──
-form.querySelectorAll('input[required], select[required]').forEach(field => {
+// ── FORM: Real-time validation feedback (text fields only) ──
+form.querySelectorAll('input[required]:not([type=checkbox]):not([type=radio]), select[required]').forEach(field => {
   field.addEventListener('blur', () => {
     if (!field.value.trim()) {
       field.style.borderColor = 'rgba(255,80,80,.5)';
     } else {
-      field.style.borderColor = 'var(--gold)';
+      field.style.borderColor = 'rgba(139,105,20,.6)';
     }
   });
   field.addEventListener('input', () => {
