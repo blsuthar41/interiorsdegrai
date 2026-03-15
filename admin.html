@@ -1,0 +1,2149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Degrai Interiors — Admin Panel</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#8B6914;--gl:#C49A28;--gp:#F0D98A;
+  --bg:#0D0D0D;--sidebar:#111111;--card:#181818;--card2:#1E1E1E;
+  --border:rgba(255,255,255,0.07);--border2:rgba(139,105,20,0.25);
+  --text:#F0EDE8;--text2:#999;--text3:#666;
+  --success:#2ECC71;--danger:#E74C3C;--warn:#F39C12;--info:#3498DB;
+  --fn:'DM Sans',sans-serif;--fnd:'DM Serif Display',serif;
+  --r:10px;--r2:6px;--sh:0 4px 24px rgba(0,0,0,0.4);
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--fn);background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh;font-size:14px}
+a{text-decoration:none;color:inherit}
+ul{list-style:none}
+img{max-width:100%;display:block}
+input,select,textarea,button{font-family:var(--fn)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--sidebar)}
+::-webkit-scrollbar-thumb{background:var(--gold);border-radius:3px}
+
+/* ── LOGIN ── */
+#loginScreen{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;z-index:9999;
+  background-image:radial-gradient(ellipse at 20% 50%,rgba(139,105,20,0.08) 0%,transparent 60%);
+}
+.login-box{
+  background:var(--card);border:1px solid var(--border2);border-radius:16px;
+  padding:48px 40px;width:100%;max-width:400px;
+  box-shadow:0 24px 64px rgba(0,0,0,0.6);
+}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-logo img{height:64px;margin:0 auto 12px}
+.login-logo h2{font-family:var(--fnd);font-size:22px;letter-spacing:.1em;color:var(--gl)}
+.login-logo p{font-size:11px;color:var(--text2);letter-spacing:.15em;text-transform:uppercase;margin-top:4px}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:8px}
+.form-group input{
+  width:100%;background:var(--card2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:12px 16px;color:var(--text);font-size:14px;
+  transition:border-color .2s;outline:none;
+}
+.form-group input:focus{border-color:var(--gold)}
+.login-btn{
+  width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gl));
+  border:none;border-radius:var(--r2);color:#fff;font-size:13px;font-weight:700;
+  letter-spacing:.15em;text-transform:uppercase;cursor:pointer;
+  transition:transform .2s,box-shadow .2s;margin-top:8px;
+}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(139,105,20,0.4)}
+.login-err{color:#ff6b6b;font-size:12px;text-align:center;margin-top:12px;display:none}
+
+/* ── LAYOUT ── */
+#app{display:flex;height:100vh;overflow:hidden;position:relative}
+#sidebar{
+  width:260px;min-width:260px;background:var(--sidebar);
+  border-right:1px solid var(--border);display:flex;flex-direction:column;
+  overflow-y:auto;transition:width .3s,min-width .3s;position:relative;z-index:100;
+}
+#sidebar.collapsed{width:64px;min-width:64px}
+#sidebar.mobile-open{transform:translateX(0)!important}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#topbar{
+  background:var(--sidebar);border-bottom:1px solid var(--border);
+  padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+#content{flex:1;overflow-y:auto;padding:24px}
+
+/* ── SIDEBAR ── */
+.sb-header{
+  padding:20px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;min-height:72px;
+}
+.sb-logo{width:36px;height:36px;flex-shrink:0;border-radius:8px;overflow:hidden;background:var(--card2);display:flex;align-items:center;justify-content:center}
+.sb-logo img{width:100%;height:100%;object-fit:contain}
+.sb-brand{overflow:hidden;white-space:nowrap}
+.sb-brand .name{font-family:var(--fnd);font-size:15px;color:var(--gl);letter-spacing:.05em}
+.sb-brand .sub{font-size:10px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase}
+.sb-toggle{
+  position:absolute;right:-13px;top:78px;width:26px;height:26px;
+  background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;border:2px solid var(--sidebar);color:#fff;font-size:11px;
+  transition:transform .3s;z-index:300;pointer-events:all;box-shadow:0 2px 8px rgba(0,0,0,0.4);
+}
+.sb-toggle:hover{background:var(--gl);}
+#sidebar.collapsed .sb-toggle{transform:rotate(180deg)}
+.sb-section{padding:8px 0}
+.sb-label{
+  font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--text3);padding:8px 20px 4px;
+  transition:opacity .2s;white-space:nowrap;overflow:hidden;
+}
+#sidebar.collapsed .sb-label{opacity:0}
+.sb-item{
+  display:flex;align-items:center;gap:12px;padding:10px 20px;
+  cursor:pointer;transition:background .2s,color .2s;border-radius:0;
+  color:var(--text2);position:relative;white-space:nowrap;overflow:hidden;
+}
+.sb-item:hover{background:rgba(139,105,20,0.1);color:var(--text)}
+.sb-item.active{background:rgba(139,105,20,0.15);color:var(--gl);border-right:3px solid var(--gold)}
+.sb-item i{width:20px;text-align:center;font-size:15px;flex-shrink:0}
+.sb-item span{font-size:13px;font-weight:500;transition:opacity .2s}
+#sidebar.collapsed .sb-item span{opacity:0}
+#sidebar.collapsed .sb-label{padding:8px 16px 4px}
+.sb-bottom{margin-top:auto;padding:16px;border-top:1px solid var(--border)}
+
+/* ── TOPBAR ── */
+.tb-left{display:flex;align-items:center;gap:16px}
+.tb-right{display:flex;align-items:center;gap:16px}
+.tb-title{font-size:16px;font-weight:600;letter-spacing:.04em}
+.tb-breadcrumb{font-size:12px;color:var(--text2)}
+.tb-user{display:flex;align-items:center;gap:10px;cursor:pointer}
+.tb-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gl));border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.tb-uname{font-size:13px;font-weight:600}
+.tb-urole{font-size:11px;color:var(--text2)}
+#menuToggle{background:var(--card2);border:1px solid var(--border);color:var(--text);font-size:18px;cursor:pointer;display:none;width:40px;height:40px;align-items:center;justify-content:center;border-radius:8px;flex-shrink:0;position:relative;z-index:600}
+#topbar{position:relative;z-index:500}
+
+/* ── CARDS & GRID ── */
+.page{display:none}
+.page.active{display:block}
+.page-header{margin-bottom:24px}
+.page-header h1{font-family:var(--fnd);font-size:26px;color:var(--gl);letter-spacing:.05em}
+.page-header p{font-size:13px;color:var(--text2);margin-top:4px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  padding:20px;display:flex;align-items:center;gap:16px;
+  transition:border-color .2s,transform .2s;
+}
+.stat-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.stat-icon{
+  width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;
+}
+.stat-info .val{font-size:22px;font-weight:700;line-height:1}
+.stat-info .lbl{font-size:11px;color:var(--text2);margin-top:4px;letter-spacing:.05em}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-head h3{font-size:14px;font-weight:700;letter-spacing:.04em}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;padding:9px 18px;
+  border-radius:var(--r2);font-size:12px;font-weight:600;letter-spacing:.06em;
+  cursor:pointer;border:none;transition:all .2s;text-transform:uppercase;
+}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gl));color:#fff}
+.btn-gold:hover{box-shadow:0 6px 20px rgba(139,105,20,0.4);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gl)}
+.btn-danger{background:#c0392b;color:#fff}
+.btn-danger:hover{background:#e74c3c}
+.btn-success{background:#27ae60;color:#fff}
+.btn-success:hover{background:#2ecc71}
+.btn-sm{padding:6px 12px;font-size:11px}
+.btn-icon{width:32px;height:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r2);background:var(--card2);border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all .2s;font-size:13px}
+.btn-icon:hover{border-color:var(--gold);color:var(--gl)}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--card2)}
+th{padding:12px 16px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);white-space:nowrap}
+td{padding:12px 16px;font-size:13px;border-top:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.badge{
+  display:inline-flex;align-items:center;padding:3px 10px;border-radius:50px;
+  font-size:11px;font-weight:600;letter-spacing:.04em;
+}
+.badge-green{background:rgba(46,204,113,0.15);color:#2ecc71}
+.badge-yellow{background:rgba(243,156,18,0.15);color:#f39c12}
+.badge-red{background:rgba(231,76,60,0.15);color:#e74c3c}
+.badge-blue{background:rgba(52,152,219,0.15);color:#3498db}
+.badge-gray{background:rgba(255,255,255,0.08);color:var(--text2)}
+.badge-gold{background:rgba(139,105,20,0.2);color:var(--gl)}
+
+/* ── FORMS ── */
+.form-row{display:grid;gap:16px;margin-bottom:16px}
+.form-row.cols-2{grid-template-columns:1fr 1fr}
+.form-row.cols-3{grid-template-columns:1fr 1fr 1fr}
+.form-row.cols-4{grid-template-columns:1fr 1fr 1fr 1fr}
+.field label{display:block;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:6px}
+.field input,.field select,.field textarea{
+  width:100%;background:var(--card2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:10px 14px;color:var(--text);font-size:13px;
+  transition:border-color .2s;outline:none;
+}
+.field textarea{resize:vertical;min-height:80px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold)}
+.field select option{background:var(--card2)}
+.field-note{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* ── MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);
+  z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{
+  background:var(--card);border:1px solid var(--border2);border-radius:14px;
+  width:100%;max-height:90vh;overflow-y:auto;padding:28px;
+  transform:scale(0.95);transition:transform .25s;
+}
+.modal-overlay.open .modal{transform:scale(1)}
+.modal.sm{max-width:460px}
+.modal.md{max-width:640px}
+.modal.lg{max-width:860px}
+.modal.xl{max-width:1100px}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.modal-head h2{font-family:var(--fnd);font-size:20px;color:var(--gl)}
+.modal-close{background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:4px}
+.modal-close:hover{color:var(--text)}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:16px;border-top:1px solid var(--border)}
+
+/* ── ITEMS TABLE (for documents) ── */
+.items-table{width:100%;border-collapse:collapse;margin-bottom:8px}
+.items-table th{padding:8px 10px;background:var(--card2);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);text-align:left}
+.items-table td{padding:6px 4px;border-bottom:1px solid var(--border)}
+.items-table input,.items-table select{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:6px 8px;color:var(--text);font-size:12px;width:100%;outline:none}
+.items-table input:focus,.items-table select:focus{border-color:var(--gold)}
+.del-row-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:4px 8px;border-radius:4px;transition:color .2s}
+.del-row-btn:hover{color:#e74c3c}
+.doc-total{text-align:right;padding:12px 0;font-size:13px;color:var(--text2)}
+.doc-total strong{color:var(--gl);font-size:16px;margin-left:8px}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto}
+.tab{padding:10px 18px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.tab.active{color:var(--gl);border-bottom-color:var(--gold)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ── SEARCH BAR ── */
+.search-bar{position:relative;flex:1;max-width:320px}
+.search-bar input{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:var(--r2);padding:9px 16px 9px 38px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s}
+.search-bar input:focus{border-color:var(--gold)}
+.search-bar i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px}
+
+/* ── PROGRESS ── */
+.progress{height:6px;background:var(--card2);border-radius:3px;overflow:hidden}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--gold),var(--gl));border-radius:3px;transition:width .5s}
+
+/* ── UPLOAD BOX ── */
+.upload-box{
+  border:2px dashed var(--border2);border-radius:var(--r);padding:32px;
+  text-align:center;cursor:pointer;transition:border-color .2s,background .2s;
+}
+.upload-box:hover{border-color:var(--gold);background:rgba(139,105,20,0.05)}
+.upload-box i{font-size:32px;color:var(--gold);margin-bottom:12px}
+.upload-box p{font-size:13px;color:var(--text2)}
+
+/* ── ATTENDANCE ── */
+.att-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px}
+.att-day{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;transition:transform .15s}
+.att-day:hover{transform:scale(1.1)}
+.att-present{background:rgba(46,204,113,0.2);color:#2ecc71}
+.att-absent{background:rgba(231,76,60,0.18);color:#e74c3c}
+.att-half{background:rgba(243,156,18,0.2);color:#f39c12}
+.att-empty{background:var(--card2);color:var(--text3)}
+
+/* ── SETTINGS ── */
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border)}
+.setting-row:last-child{border-bottom:none}
+.setting-info h4{font-size:14px;font-weight:600}
+.setting-info p{font-size:12px;color:var(--text2);margin-top:3px}
+.tog{
+  width:50px;height:26px;border-radius:13px;
+  background:#3a3a3a;border:1px solid #555;
+  position:relative;cursor:pointer;flex-shrink:0;
+  transition:background .25s,border-color .25s;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;display:inline-block;
+}
+.tog::after{
+  content:'';position:absolute;
+  width:20px;height:20px;border-radius:50%;
+  background:#ccc;top:3px;left:3px;
+  transition:transform .25s,background .25s;
+  box-shadow:0 1px 4px rgba(0,0,0,.5);
+}
+.tog.on{background:var(--gold);border-color:var(--gl)}
+.tog.on::after{transform:translateX(24px);background:#fff}
+.tog.disabled{opacity:0.6;cursor:not-allowed;pointer-events:none}
+
+/* ── NOTIFICATION ── */
+.notif{
+  position:fixed;bottom:24px;right:24px;z-index:9000;
+  background:var(--card);border:1px solid var(--border2);border-radius:var(--r);
+  padding:14px 20px;display:flex;align-items:center;gap:12px;
+  box-shadow:var(--sh);transform:translateX(120%);transition:transform .3s;
+  max-width:340px;font-size:13px;
+}
+.notif.show{transform:translateX(0)}
+.notif i{font-size:16px}
+.notif.success{border-color:rgba(46,204,113,0.4)}
+.notif.success i{color:#2ecc71}
+.notif.error{border-color:rgba(231,76,60,0.4)}
+.notif.error i{color:#e74c3c}
+
+/* ── MOBILE OVERLAY ── */
+#mobileOverlay{
+  display:none;position:fixed;top:60px;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);
+  z-index:380;opacity:0;transition:opacity .3s;pointer-events:none;
+}
+#mobileOverlay.show{opacity:1;pointer-events:all}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){
+  #sidebar{position:fixed;top:0;left:0;height:100vh;transform:translateX(-100%);z-index:450;transition:transform .3s}
+  #sidebar.mobile-open{transform:translateX(0)}
+  #sidebar.collapsed{width:260px;min-width:260px}
+  #menuToggle{display:flex !important}
+  #mobileOverlay{display:block}
+  .sb-toggle{display:none !important}
+  .form-row.cols-4{grid-template-columns:1fr 1fr}
+  .form-row.cols-3{grid-template-columns:1fr 1fr}
+  .grid-3{grid-template-columns:1fr 1fr}
+}
+@media(max-width:640px){
+  #content{padding:16px}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .form-row.cols-2,.form-row.cols-3,.form-row.cols-4,.grid-2,.grid-3{grid-template-columns:1fr}
+  .modal{padding:20px}
+  .topbar-title{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <img src="logo.png" alt="Degrai Interiors" id="loginLogo" onerror="this.style.display='none'"/>
+      <h2>DEGRAI INTERIORS</h2>
+      <p>Admin Panel</p>
+    </div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="Enter username" autocomplete="username"/>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i>&nbsp; Sign In</button>
+    <div class="login-err" id="loginErr">Invalid username or password</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <div id="mobileOverlay" onclick="closeMobile()"></div>
+
+  <!-- SIDEBAR -->
+  <nav id="sidebar">
+    <div class="sb-header">
+      <div class="sb-logo" id="sbLogoWrap">
+        <img src="logo.png" id="sbLogo" onerror="this.parentElement.innerHTML='<i class=\'fas fa-building\' style=\'color:var(--gold);font-size:18px\'></i>'"/>
+      </div>
+      <div class="sb-brand">
+        <div class="name">DEGRAI</div>
+        <div class="sub">Admin Panel</div>
+      </div>
+    </div>
+    <div class="sb-toggle" onclick="toggleSidebar()" id="sbToggle"><i class="fas fa-chevron-left"></i></div>
+
+    <div class="sb-section">
+      <div class="sb-label">Dashboard</div>
+      <div class="sb-item active" data-page="dashboard"><i class="fas fa-th-large"></i><span>Overview</span></div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-label">Documents</div>
+      <div class="sb-item" data-page="quotation"><i class="fas fa-file-invoice"></i><span>Quotation</span></div>
+      <div class="sb-item" data-page="lpo"><i class="fas fa-shopping-cart"></i><span>LPO</span></div>
+      <div class="sb-item" data-page="contract"><i class="fas fa-handshake"></i><span>Contract</span></div>
+      <div class="sb-item" data-page="delivery"><i class="fas fa-truck"></i><span>Delivery Note</span></div>
+      <div class="sb-item" data-page="invoice"><i class="fas fa-receipt"></i><span>Invoice</span></div>
+      <div class="sb-item" data-page="ratelist"><i class="fas fa-tags"></i><span>Rate List</span></div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-label">Management</div>
+      <div class="sb-item" data-page="projects"><i class="fas fa-project-diagram"></i><span>Projects</span></div>
+      <div class="sb-item" data-page="procurement"><i class="fas fa-boxes"></i><span>Procurement</span></div>
+      <div class="sb-item" data-page="finance"><i class="fas fa-chart-line"></i><span>Finance & Accounts</span></div>
+      <div class="sb-item" data-page="salary"><i class="fas fa-users"></i><span>Salary & HR</span></div>
+      <div class="sb-item" data-page="attendance"><i class="fas fa-calendar-check"></i><span>Attendance</span></div>
+      <div class="sb-item" data-page="reports"><i class="fas fa-chart-bar"></i><span>Progress Reports</span></div>
+      <div class="sb-item" data-page="inventory"><i class="fas fa-warehouse"></i><span>Inventory</span></div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-label">System</div>
+      <div class="sb-item" data-page="trash"><i class="fas fa-trash"></i><span>Trash</span></div>
+      <div class="sb-item" data-page="alldata"><i class="fas fa-download"></i><span>All Data Download</span></div>
+      <div class="sb-item" data-page="settings"><i class="fas fa-cog"></i><span>Settings</span></div>
+    </div>
+
+    <div class="sb-bottom">
+      <div class="sb-item" onclick="doLogout()" style="color:#e74c3c"><i class="fas fa-sign-out-alt"></i><span>Logout</span></div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div id="topbar">
+      <div class="tb-left">
+        <button id="menuToggle" onclick="toggleMobile()"><i class="fas fa-bars"></i></button>
+        <div>
+          <div class="tb-title topbar-title" id="topbarTitle">Dashboard</div>
+          <div class="tb-breadcrumb" id="topbarSub">Overview</div>
+        </div>
+      </div>
+      <div class="tb-right">
+        <div class="search-bar" style="display:none" id="globalSearch">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search..."/>
+        </div>
+        <div class="tb-user">
+          <div class="tb-avatar" id="tbAvatar">A</div>
+          <div>
+            <div class="tb-uname" id="tbUname">Admin</div>
+            <div class="tb-urole" id="tbUrole">Administrator</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="content">
+
+      <!-- ══ DASHBOARD ══ -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <h1>Welcome back 👋</h1>
+          <p>Here's what's happening at Degrai Interiors today.</p>
+        </div>
+        <div class="stat-grid" id="dashStats"></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><h3>Recent Documents</h3><button class="btn btn-outline btn-sm" onclick="navigate('quotation')">View All</button></div>
+            <div id="dashRecentDocs"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Active Projects</h3><button class="btn btn-outline btn-sm" onclick="navigate('projects')">View All</button></div>
+            <div id="dashProjects"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ QUOTATION ══ -->
+      <div class="page" id="page-quotation">
+        <div class="page-header">
+          <h1>Quotations</h1>
+          <p>Create and manage project quotations</p>
+        </div>
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="btn btn-gold" onclick="openDocModal('quotation')"><i class="fas fa-plus"></i> New Quotation</button>
+          <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search quotations..." oninput="filterDocs('quotation',this.value)"/></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Doc No</th><th>Client</th><th>Project</th><th>Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead><tbody id="quotation-tbody"></tbody></table></div>
+      </div>
+
+      <!-- ══ LPO ══ -->
+      <div class="page" id="page-lpo">
+        <div class="page-header"><h1>LPO — Local Purchase Orders</h1><p>Manage purchase orders for vendors</p></div>
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="btn btn-gold" onclick="openDocModal('lpo')"><i class="fas fa-plus"></i> New LPO</button>
+          <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search LPOs..." oninput="filterDocs('lpo',this.value)"/></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>LPO No</th><th>Vendor</th><th>Project</th><th>Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead><tbody id="lpo-tbody"></tbody></table></div>
+      </div>
+
+      <!-- ══ CONTRACT ══ -->
+      <div class="page" id="page-contract">
+        <div class="page-header"><h1>Contracts</h1><p>Client and vendor contracts</p></div>
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="btn btn-gold" onclick="openDocModal('contract')"><i class="fas fa-plus"></i> New Contract</button>
+          <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search contracts..." oninput="filterDocs('contract',this.value)"/></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Contract No</th><th>Party</th><th>Project</th><th>Date</th><th>Value</th><th>Status</th><th>Actions</th></tr></thead><tbody id="contract-tbody"></tbody></table></div>
+      </div>
+
+      <!-- ══ DELIVERY NOTE ══ -->
+      <div class="page" id="page-delivery">
+        <div class="page-header"><h1>Delivery Notes</h1><p>Track material and goods deliveries</p></div>
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="btn btn-gold" onclick="openDocModal('delivery')"><i class="fas fa-plus"></i> New Delivery Note</button>
+          <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search delivery notes..." oninput="filterDocs('delivery',this.value)"/></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>DN No</th><th>To</th><th>Project</th><th>Date</th><th>Items</th><th>Status</th><th>Actions</th></tr></thead><tbody id="delivery-tbody"></tbody></table></div>
+      </div>
+
+      <!-- ══ INVOICE ══ -->
+      <div class="page" id="page-invoice">
+        <div class="page-header"><h1>Invoices</h1><p>Billing and payment tracking</p></div>
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="btn btn-gold" onclick="openDocModal('invoice')"><i class="fas fa-plus"></i> New Invoice</button>
+          <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search invoices..." oninput="filterDocs('invoice',this.value)"/></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Invoice No</th><th>Client</th><th>Project</th><th>Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead><tbody id="invoice-tbody"></tbody></table></div>
+      </div>
+
+      <!-- ══ RATE LIST ══ -->
+      <div class="page" id="page-ratelist">
+        <div class="page-header"><h1>Rate List</h1><p>Labour and material rate cards</p></div>
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="btn btn-gold" onclick="openDocModal('ratelist')"><i class="fas fa-plus"></i> New Rate List</button>
+          <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search rate lists..." oninput="filterDocs('ratelist',this.value)"/></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>RL No</th><th>Title</th><th>Type</th><th>Date</th><th>Items</th><th>Status</th><th>Actions</th></tr></thead><tbody id="ratelist-tbody"></tbody></table></div>
+      </div>
+
+      <!-- ══ PROJECTS ══ -->
+      <div class="page" id="page-projects">
+        <div class="page-header"><h1>Projects & Tracker</h1><p>Manage all ongoing and completed projects</p></div>
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="btn btn-gold" onclick="openProjectModal()"><i class="fas fa-plus"></i> New Project</button>
+          <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search projects..."/></div>
+        </div>
+        <div class="stat-grid" id="projStats"></div>
+        <div class="table-wrap"><table><thead><tr><th>Project</th><th>Client</th><th>Value</th><th>Start</th><th>Deadline</th><th>Progress</th><th>Status</th><th>Actions</th></tr></thead><tbody id="projects-tbody"></tbody></table></div>
+      </div>
+
+      <!-- ══ PROCUREMENT ══ -->
+      <div class="page" id="page-procurement">
+        <div class="page-header"><h1>Procurement</h1><p>Purchase requests and vendor management</p></div>
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="btn btn-gold" onclick="openProcurementModal()"><i class="fas fa-plus"></i> New Request</button>
+          <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search procurement..."/></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>PR No</th><th>Item</th><th>Vendor</th><th>Project</th><th>Qty</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead><tbody id="procurement-tbody"></tbody></table></div>
+      </div>
+
+      <!-- ══ FINANCE ══ -->
+      <div class="page" id="page-finance">
+        <div class="page-header"><h1>Finance & Accounts</h1><p>Track income, expenses and balances</p></div>
+        <div class="stat-grid" id="finStats"></div>
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="btn btn-gold" onclick="openFinanceModal()"><i class="fas fa-plus"></i> Add Entry</button>
+          <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search transactions..."/></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Type</th><th>Amount</th><th>Balance</th><th>Actions</th></tr></thead><tbody id="finance-tbody"></tbody></table></div>
+      </div>
+
+      <!-- ══ SALARY & HR ══ -->
+      <div class="page" id="page-salary">
+        <div class="page-header"><h1>Salary & HR</h1><p>Employee management and payroll</p></div>
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="btn btn-gold" onclick="openEmployeeModal()"><i class="fas fa-user-plus"></i> Add Employee</button>
+          <button class="btn btn-outline" onclick="generatePayroll()"><i class="fas fa-file-invoice-dollar"></i> Generate Payroll</button>
+          <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search employees..."/></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Name</th><th>Role</th><th>Department</th><th>Basic Salary</th><th>Join Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="salary-tbody"></tbody></table></div>
+      </div>
+
+      <!-- ══ ATTENDANCE ══ -->
+      <div class="page" id="page-attendance">
+        <div class="page-header"><h1>Attendance</h1><p>Daily attendance tracking</p></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head">
+              <h3>Mark Attendance</h3>
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="month" id="attMonth" style="background:var(--card2);border:1px solid var(--border);border-radius:var(--r2);padding:6px 10px;color:var(--text);font-size:12px;outline:none"/>
+              </div>
+            </div>
+            <div id="attEmployeeList"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Monthly Summary</h3></div>
+            <div id="attSummary"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PROGRESS REPORTS ══ -->
+      <div class="page" id="page-reports">
+        <div class="page-header"><h1>Progress Reports</h1><p>Project progress and site reports</p></div>
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="btn btn-gold" onclick="openReportModal()"><i class="fas fa-plus"></i> Add Report</button>
+          <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search reports..."/></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Date</th><th>Project</th><th>Report Type</th><th>Progress %</th><th>Issues</th><th>By</th><th>Actions</th></tr></thead><tbody id="reports-tbody"></tbody></table></div>
+      </div>
+
+      <!-- ══ INVENTORY ══ -->
+      <div class="page" id="page-inventory">
+        <div class="page-header"><h1>Inventory</h1><p>Material and tools stock management</p></div>
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="btn btn-gold" onclick="openInventoryModal()"><i class="fas fa-plus"></i> Add Item</button>
+          <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search inventory..."/></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Item</th><th>Category</th><th>Unit</th><th>In Stock</th><th>Min Stock</th><th>Rate</th><th>Total Value</th><th>Status</th><th>Actions</th></tr></thead><tbody id="inventory-tbody"></tbody></table></div>
+      </div>
+
+      <!-- ══ TRASH ══ -->
+      <div class="page" id="page-trash">
+        <div class="page-header"><h1>Trash</h1><p>Deleted items — restore or permanently delete</p></div>
+        <div style="display:flex;gap:12px;margin-bottom:20px">
+          <button class="btn btn-danger" onclick="emptyTrash()"><i class="fas fa-trash"></i> Empty Trash</button>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Type</th><th>Name</th><th>Deleted On</th><th>Actions</th></tr></thead><tbody id="trash-tbody"></tbody></table></div>
+      </div>
+
+      <!-- ══ ALL DATA ══ -->
+      <div class="page" id="page-alldata">
+        <div class="page-header"><h1>All Data Download</h1><p>Export all your data</p></div>
+        <div class="grid-3">
+          <div class="card" style="text-align:center;padding:32px">
+            <i class="fas fa-file-excel" style="font-size:40px;color:#27ae60;margin-bottom:12px"></i>
+            <h3 style="margin-bottom:8px;font-size:15px">Export All (JSON)</h3>
+            <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Complete backup of all records</p>
+            <button class="btn btn-gold" onclick="exportAllData('json')">Download JSON</button>
+          </div>
+          <div class="card" style="text-align:center;padding:32px">
+            <i class="fas fa-file-csv" style="font-size:40px;color:#3498db;margin-bottom:12px"></i>
+            <h3 style="margin-bottom:8px;font-size:15px">Documents Summary</h3>
+            <p style="font-size:12px;color:var(--text2);margin-bottom:16px">All documents as CSV</p>
+            <button class="btn btn-outline" onclick="exportAllData('csv')">Download CSV</button>
+          </div>
+          <div class="card" style="text-align:center;padding:32px">
+            <i class="fas fa-database" style="font-size:40px;color:var(--gold);margin-bottom:12px"></i>
+            <h3 style="margin-bottom:8px;font-size:15px">Finance Report</h3>
+            <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Full financial summary</p>
+            <button class="btn btn-outline" onclick="exportFinance()">Download PDF</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SETTINGS ══ -->
+      <div class="page" id="page-settings">
+        <div class="page-header"><h1>Settings</h1><p>Customize your admin panel</p></div>
+        <div class="tabs">
+          <div class="tab active" data-tab="company">Company</div>
+          <div class="tab" data-tab="users">Users</div>
+          <div class="tab" data-tab="documents">Documents</div>
+          <div class="tab" data-tab="system">System</div>
+        </div>
+        <div class="tab-content active" data-tab-content="company">
+          <div class="card">
+            <div class="card-head"><h3>Company Information</h3></div>
+            <div class="form-row cols-2">
+              <div class="field"><label>Company Name</label><input type="text" id="s_name" placeholder="Degrai Interiors"/></div>
+              <div class="field"><label>Tagline</label><input type="text" id="s_tagline" placeholder="Where Design Meets Execution"/></div>
+            </div>
+            <div class="form-row cols-2">
+              <div class="field"><label>Phone</label><input type="text" id="s_phone" placeholder="+91 96722 55141"/></div>
+              <div class="field"><label>Email</label><input type="text" id="s_email" placeholder="info@interiorsdegrai.in"/></div>
+            </div>
+            <div class="form-row cols-2">
+              <div class="field"><label>Website</label><input type="text" id="s_website" placeholder="https://interiorsdegrai.in"/></div>
+              <div class="field"><label>GSTIN</label><input type="text" id="s_gstin" placeholder="GSTIN Number"/></div>
+            </div>
+            <div class="form-row">
+              <div class="field"><label>Address</label><textarea id="s_address" placeholder="Amraiwadi, Ahmedabad, Gujarat — 380038" rows="2"></textarea></div>
+            </div>
+            <div class="form-row">
+              <div class="field"><label>Bank Details (for invoices)</label><textarea id="s_bank" placeholder="Bank Name, Account No, IFSC, Branch" rows="3"></textarea></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Company Logo</h3></div>
+            <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+              <div>
+                <div style="width:100px;height:100px;border:2px solid var(--border2);border-radius:12px;overflow:hidden;background:var(--card2);display:flex;align-items:center;justify-content:center">
+                  <img id="logoPreview" src="logo.png" style="width:100%;height:100%;object-fit:contain" onerror="this.parentElement.innerHTML='<i class=\'fas fa-image\' style=\'font-size:32px;color:var(--text3)\'></i>'"/>
+                </div>
+              </div>
+              <div style="flex:1">
+                <div class="upload-box" onclick="document.getElementById('logoUpload').click()">
+                  <i class="fas fa-cloud-upload-alt"></i>
+                  <p>Click to upload logo</p>
+                  <p style="font-size:11px;color:var(--text3);margin-top:4px">PNG, JPG — recommended 200×200px</p>
+                </div>
+                <input type="file" id="logoUpload" accept="image/*" style="display:none" onchange="uploadLogo(this)"/>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:8px">
+            <button class="btn btn-gold" onclick="saveCompanySettings()"><i class="fas fa-save"></i> Save Company Info</button>
+          </div>
+        </div>
+        <div class="tab-content" data-tab-content="users">
+          <div class="card">
+            <div class="card-head">
+              <h3>Users & Access</h3>
+              <button class="btn btn-gold btn-sm" onclick="openUserModal()"><i class="fas fa-user-plus"></i> Add User</button>
+            </div>
+            <div class="table-wrap"><table><thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Last Login</th><th>Status</th><th>Actions</th></tr></thead><tbody id="users-tbody"></tbody></table></div>
+          </div>
+        </div>
+        <div class="tab-content" data-tab-content="documents">
+          <div class="card">
+            <div class="card-head"><h3>Document Numbering</h3></div>
+            <div class="form-row cols-3">
+              <div class="field"><label>Quotation Prefix</label><input type="text" id="s_qprefix" placeholder="QTN"/></div>
+              <div class="field"><label>Invoice Prefix</label><input type="text" id="s_iprefix" placeholder="INV"/></div>
+              <div class="field"><label>LPO Prefix</label><input type="text" id="s_lprefix" placeholder="LPO"/></div>
+            </div>
+            <div class="form-row cols-3">
+              <div class="field"><label>Contract Prefix</label><label class="field-note"></label><input type="text" id="s_cprefix" placeholder="CON"/></div>
+              <div class="field"><label>Delivery Note Prefix</label><input type="text" id="s_dprefix" placeholder="DN"/></div>
+              <div class="field"><label>Starting Number</label><input type="number" id="s_startnum" placeholder="1001"/></div>
+            </div>
+            <div class="form-row cols-2">
+              <div class="field"><label>Currency</label><select id="s_currency"><option value="INR">INR — Indian Rupee</option><option value="AED">AED — UAE Dirham</option><option value="USD">USD — US Dollar</option></select></div>
+              <div class="field"><label>Tax Label</label><input type="text" id="s_taxlabel" placeholder="GST"/></div>
+            </div>
+            <div class="form-row cols-2">
+              <div class="field"><label>Default Tax %</label><input type="number" id="s_taxrate" placeholder="18"/></div>
+              <div class="field"><label>Payment Terms</label><input type="text" id="s_payterms" placeholder="Net 30 days"/></div>
+            </div>
+            <div class="form-row">
+              <div class="field"><label>Terms & Conditions (PDF Footer)</label><textarea id="s_terms" rows="4" placeholder="1. Prices are valid for 30 days..."></textarea></div>
+            </div>
+            <button class="btn btn-gold" onclick="saveDocSettings()"><i class="fas fa-save"></i> Save Document Settings</button>
+          </div>
+        </div>
+        <div class="tab-content" data-tab-content="system">
+          <div class="card">
+            <div class="card-head"><h3>System Preferences</h3></div>
+            <div class="setting-row">
+              <div class="setting-info"><h4>Dark Mode</h4><p>Always on for this admin panel</p></div>
+              <div class="tog on disabled"></div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><h4>Auto-save forms</h4><p>Automatically save form drafts</p></div>
+              <div class="tog on" id="t_autosave" onclick="togClick(this)"></div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><h4>Show currency symbol in PDFs</h4><p>Display currency code before amounts</p></div>
+              <div class="tog" id="t_currencypdf" onclick="togClick(this)"></div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><h4>Include terms in all PDFs</h4><p>Auto-append T&C to generated documents</p></div>
+              <div class="tog on" id="t_termsall" onclick="togClick(this)"></div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:16px">
+            <div class="card-head"><h3>Danger Zone</h3></div>
+            <div class="setting-row">
+              <div class="setting-info"><h4 style="color:#e74c3c">Clear All Data</h4><p>This will permanently delete all saved records</p></div>
+              <button class="btn btn-danger btn-sm" onclick="clearAllData()">Clear Data</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ══ MODALS ══ -->
+
+<!-- DOC MODAL -->
+<div class="modal-overlay" id="docModal">
+  <div class="modal xl" id="docModalInner">
+    <div class="modal-head">
+      <h2 id="docModalTitle">New Document</h2>
+      <button class="modal-close" onclick="closeModal('docModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="docModalBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('docModal')">Cancel</button>
+      <button class="btn btn-outline" onclick="saveDoc(true)"><i class="fas fa-save"></i> Save Draft</button>
+      <button class="btn btn-gold" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> Save & Generate PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECT MODAL -->
+<div class="modal-overlay" id="projectModal">
+  <div class="modal md">
+    <div class="modal-head">
+      <h2 id="projModalTitle">New Project</h2>
+      <button class="modal-close" onclick="closeModal('projectModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Project Name</label><input type="text" id="pm_name"/></div>
+      <div class="field"><label>Client Name</label><input type="text" id="pm_client"/></div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Project Value</label><input type="number" id="pm_value"/></div>
+      <div class="field"><label>Status</label><select id="pm_status"><option>Planning</option><option>In Progress</option><option>On Hold</option><option>Completed</option></select></div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Start Date</label><input type="date" id="pm_start"/></div>
+      <div class="field"><label>Deadline</label><input type="date" id="pm_deadline"/></div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Location</label><input type="text" id="pm_location"/></div>
+      <div class="field"><label>Progress %</label><input type="number" id="pm_progress" min="0" max="100" value="0"/></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Description</label><textarea id="pm_desc" rows="3"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('projectModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveProject()">Save Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMPLOYEE MODAL -->
+<div class="modal-overlay" id="empModal">
+  <div class="modal md">
+    <div class="modal-head">
+      <h2>Add Employee</h2>
+      <button class="modal-close" onclick="closeModal('empModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Full Name</label><input type="text" id="em_name"/></div>
+      <div class="field"><label>Employee ID</label><input type="text" id="em_id" placeholder="EMP001"/></div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Role / Designation</label><input type="text" id="em_role"/></div>
+      <div class="field"><label>Department</label><select id="em_dept"><option>Site</option><option>Design</option><option>Accounts</option><option>HR</option><option>Management</option><option>Procurement</option></select></div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Basic Salary</label><input type="number" id="em_salary"/></div>
+      <div class="field"><label>Join Date</label><input type="date" id="em_join"/></div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Phone</label><input type="text" id="em_phone"/></div>
+      <div class="field"><label>Aadhar / ID No</label><input type="text" id="em_aadhar"/></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('empModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveEmployee()">Save Employee</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER MODAL -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal sm">
+    <div class="modal-head">
+      <h2 id="userModalTitle">Add User</h2>
+      <button class="modal-close" onclick="closeModal('userModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Full Name</label><input type="text" id="um_name"/></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Username</label><input type="text" id="um_username"/></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Password</label><input type="password" id="um_password"/></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Role</label><select id="um_role"><option value="admin">Administrator</option><option value="manager">Manager</option><option value="accountant">Accountant</option><option value="viewer">Viewer</option></select></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('userModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveUser()">Save User</button>
+    </div>
+  </div>
+</div>
+
+<!-- FINANCE MODAL -->
+<div class="modal-overlay" id="financeModal">
+  <div class="modal md">
+    <div class="modal-head">
+      <h2>Add Transaction</h2>
+      <button class="modal-close" onclick="closeModal('financeModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Date</label><input type="date" id="fm_date"/></div>
+      <div class="field"><label>Type</label><select id="fm_type"><option value="income">Income</option><option value="expense">Expense</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Description</label><input type="text" id="fm_desc"/></div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Category</label><select id="fm_cat"><option>Client Payment</option><option>Material Purchase</option><option>Labour Payment</option><option>Equipment</option><option>Office Expense</option><option>Salary</option><option>Advance</option><option>Other</option></select></div>
+      <div class="field"><label>Amount</label><input type="number" id="fm_amount"/></div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Project</label><input type="text" id="fm_project" placeholder="(optional)"/></div>
+      <div class="field"><label>Reference No</label><input type="text" id="fm_ref" placeholder="(optional)"/></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('financeModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveFinance()">Save Transaction</button>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div class="modal-overlay" id="reportModal">
+  <div class="modal md">
+    <div class="modal-head">
+      <h2>Add Progress Report</h2>
+      <button class="modal-close" onclick="closeModal('reportModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Date</label><input type="date" id="rm_date"/></div>
+      <div class="field"><label>Project</label><select id="rm_project"></select></div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Report Type</label><select id="rm_type"><option>Daily Report</option><option>Weekly Report</option><option>Monthly Report</option><option>Milestone Report</option></select></div>
+      <div class="field"><label>Progress %</label><input type="number" id="rm_progress" min="0" max="100"/></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Work Done</label><textarea id="rm_done" rows="3" placeholder="Describe work completed..."></textarea></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Issues / Delays</label><textarea id="rm_issues" rows="2" placeholder="Any issues or delays..."></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('reportModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveReport()">Save Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVENTORY MODAL -->
+<div class="modal-overlay" id="inventoryModal">
+  <div class="modal md">
+    <div class="modal-head">
+      <h2>Add Inventory Item</h2>
+      <button class="modal-close" onclick="closeModal('inventoryModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Item Name</label><input type="text" id="im_name"/></div>
+      <div class="field"><label>Category</label><select id="im_cat"><option>Material</option><option>Tool</option><option>Equipment</option><option>Consumable</option><option>Electrical</option><option>Plumbing</option><option>Finishing</option></select></div>
+    </div>
+    <div class="form-row cols-3">
+      <div class="field"><label>Unit</label><select id="im_unit"><option>Nos</option><option>Sq.Ft</option><option>Rft</option><option>Kg</option><option>Litre</option><option>Bag</option><option>Box</option><option>Set</option></select></div>
+      <div class="field"><label>Quantity</label><input type="number" id="im_qty" placeholder="0"/></div>
+      <div class="field"><label>Min Stock</label><input type="number" id="im_min" placeholder="5"/></div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Rate per Unit</label><input type="number" id="im_rate"/></div>
+      <div class="field"><label>Location</label><input type="text" id="im_loc" placeholder="Store / Site"/></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('inventoryModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveInventory()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROCUREMENT MODAL -->
+<div class="modal-overlay" id="procurementModal">
+  <div class="modal md">
+    <div class="modal-head">
+      <h2>New Purchase Request</h2>
+      <button class="modal-close" onclick="closeModal('procurementModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Item / Material</label><input type="text" id="pcm_item"/></div>
+      <div class="field"><label>Vendor Name</label><input type="text" id="pcm_vendor"/></div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Project</label><select id="pcm_project"></select></div>
+      <div class="field"><label>Required Date</label><input type="date" id="pcm_date"/></div>
+    </div>
+    <div class="form-row cols-3">
+      <div class="field"><label>Quantity</label><input type="number" id="pcm_qty"/></div>
+      <div class="field"><label>Unit</label><select id="pcm_unit"><option>Nos</option><option>Sq.Ft</option><option>Rft</option><option>Kg</option><option>Litre</option><option>Bag</option></select></div>
+      <div class="field"><label>Estimated Amount</label><input type="number" id="pcm_amount"/></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Notes</label><textarea id="pcm_notes" rows="2"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('procurementModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveProcurement()">Save Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION -->
+<div class="notif" id="notif">
+  <i class="fas fa-check-circle"></i>
+  <span id="notifText">Saved successfully</span>
+</div>
+
+<script>
+// ══════════════════════════════════
+// STATE
+// ══════════════════════════════════
+let DB = {
+  users:[{id:1,name:'Administrator',username:'admin',password:'admin123',role:'admin',lastLogin:''}],
+  settings:{
+    name:'Degrai Interiors',tagline:'Where Design Meets Execution',
+    phone:'+91 96722 55141',email:'info@interiorsdegrai.in',
+    website:'https://interiorsdegrai.in',gstin:'',
+    address:'Amraiwadi, Ahmedabad, Gujarat — 380038',
+    bank:'',qprefix:'QTN',iprefix:'INV',lprefix:'LPO',
+    cprefix:'CON',dprefix:'DN',startnum:1001,
+    currency:'INR',taxlabel:'GST',taxrate:18,
+    payterms:'Net 30 days',terms:'1. All prices are inclusive of taxes unless mentioned otherwise.\n2. Payment terms as agreed.\n3. This document is computer generated.\n4. For any queries contact: info@interiorsdegrai.in',
+    logo:'logo.png'
+  },
+  documents:{quotation:[],lpo:[],contract:[],delivery:[],invoice:[],ratelist:[]},
+  projects:[],procurement:[],finance:[],employees:[],attendance:{},
+  reports:[],inventory:[],trash:[],counters:{}
+};
+let currentUser=null;
+let currentDocType='';
+let currentDocId=null;
+let editingId=null;
+
+// ══════════════════════════════════
+// PERSIST
+// ══════════════════════════════════
+function save(){try{localStorage.setItem('degrai_admin',JSON.stringify(DB));}catch(e){}}
+function load(){try{const d=localStorage.getItem('degrai_admin');if(d){const p=JSON.parse(d);DB={...DB,...p};DB.documents={...{quotation:[],lpo:[],contract:[],delivery:[],invoice:[],ratelist:[]},...(p.documents||{})};}}catch(e){}}
+
+// ══════════════════════════════════
+// AUTH
+// ══════════════════════════════════
+function doLogin(){
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value.trim();
+  const usr=DB.users.find(x=>x.username===u&&x.password===p);
+  if(!usr){document.getElementById('loginErr').style.display='block';return;}
+  currentUser=usr;
+  usr.lastLogin=new Date().toLocaleString();
+  save();
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('tbUname').textContent=usr.name;
+  document.getElementById('tbUrole').textContent=roleLabel(usr.role);
+  document.getElementById('tbAvatar').textContent=usr.name[0].toUpperCase();
+  loadSettings();
+  renderAll();
+  navigate('dashboard');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none')doLogin();});
+function doLogout(){currentUser=null;document.getElementById('loginScreen').style.display='flex';document.getElementById('app').style.display='none';document.getElementById('loginUser').value='';document.getElementById('loginPass').value='';}
+function roleLabel(r){return{admin:'Administrator',manager:'Manager',accountant:'Accountant',viewer:'Viewer'}[r]||r;}
+
+// ══════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════
+const pageNames={dashboard:'Dashboard',quotation:'Quotations',lpo:'LPO',contract:'Contracts',delivery:'Delivery Notes',invoice:'Invoices',ratelist:'Rate List',projects:'Projects',procurement:'Procurement',finance:'Finance & Accounts',salary:'Salary & HR',attendance:'Attendance',reports:'Progress Reports',inventory:'Inventory',trash:'Trash',alldata:'All Data',settings:'Settings'};
+function navigate(pg){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  const el=document.getElementById('page-'+pg);
+  if(el)el.classList.add('active');
+  const sb=document.querySelector(`.sb-item[data-page="${pg}"]`);
+  if(sb)sb.classList.add('active');
+  document.getElementById('topbarTitle').textContent=pageNames[pg]||pg;
+  document.getElementById('topbarSub').textContent='Degrai Interiors / '+pageNames[pg];
+  closeMobile();
+  renderPage(pg);
+}
+document.querySelectorAll('.sb-item[data-page]').forEach(el=>{el.addEventListener('click',()=>navigate(el.dataset.page));});
+function renderPage(pg){
+  if(pg==='dashboard')renderDashboard();
+  else if(['quotation','lpo','contract','delivery','invoice','ratelist'].includes(pg))renderDocsTable(pg);
+  else if(pg==='projects')renderProjects();
+  else if(pg==='procurement')renderProcurement();
+  else if(pg==='finance')renderFinance();
+  else if(pg==='salary')renderSalary();
+  else if(pg==='attendance')renderAttendance();
+  else if(pg==='reports')renderReports();
+  else if(pg==='inventory')renderInventory();
+  else if(pg==='trash')renderTrash();
+  else if(pg==='settings')renderSettings();
+}
+function renderAll(){['quotation','lpo','contract','delivery','invoice','ratelist','projects','procurement','finance','salary','attendance','reports','inventory'].forEach(renderPage);}
+
+// ══════════════════════════════════
+// SIDEBAR TOGGLE
+// ══════════════════════════════════
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('collapsed');}
+function toggleMobile(){
+  const sb=document.getElementById('sidebar');
+  const ov=document.getElementById('mobileOverlay');
+  const isOpen=sb.classList.toggle('mobile-open');
+  ov.classList.toggle('show',isOpen);
+}
+function closeMobile(){
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('mobileOverlay').classList.remove('show');
+}
+
+// ══════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    const tab=t.dataset.tab;
+    t.closest('.page').querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));
+    t.closest('.page').querySelectorAll('.tab-content').forEach(x=>x.classList.toggle('active',x.dataset.tabContent===tab));
+  });
+});
+function loadSettings(){
+  const s=DB.settings;
+  setVal('s_name',s.name);setVal('s_tagline',s.tagline);setVal('s_phone',s.phone);
+  setVal('s_email',s.email);setVal('s_website',s.website);setVal('s_gstin',s.gstin);
+  setVal('s_address',s.address);setVal('s_bank',s.bank);
+  setVal('s_qprefix',s.qprefix);setVal('s_iprefix',s.iprefix);setVal('s_lprefix',s.lprefix);
+  setVal('s_cprefix',s.cprefix);setVal('s_dprefix',s.dprefix);setVal('s_startnum',s.startnum);
+  setVal('s_currency',s.currency);setVal('s_taxlabel',s.taxlabel);setVal('s_taxrate',s.taxrate);
+  setVal('s_payterms',s.payterms);setVal('s_terms',s.terms);
+  if(s.logo){const p=document.getElementById('logoPreview');if(p)p.src=s.logo;}
+  const sbl=document.getElementById('sbLogo');if(sbl&&s.logo)sbl.src=s.logo;
+  const ll=document.getElementById('loginLogo');if(ll&&s.logo)ll.src=s.logo;
+}
+function setVal(id,v){const el=document.getElementById(id);if(el&&v!==undefined)el.value=v;}
+function getVal(id){const el=document.getElementById(id);return el?el.value:'';}
+function saveCompanySettings(){
+  DB.settings.name=getVal('s_name');DB.settings.tagline=getVal('s_tagline');
+  DB.settings.phone=getVal('s_phone');DB.settings.email=getVal('s_email');
+  DB.settings.website=getVal('s_website');DB.settings.gstin=getVal('s_gstin');
+  DB.settings.address=getVal('s_address');DB.settings.bank=getVal('s_bank');
+  save();notify('Company information saved','success');
+}
+function saveDocSettings(){
+  DB.settings.qprefix=getVal('s_qprefix');DB.settings.iprefix=getVal('s_iprefix');
+  DB.settings.lprefix=getVal('s_lprefix');DB.settings.cprefix=getVal('s_cprefix');
+  DB.settings.dprefix=getVal('s_dprefix');DB.settings.startnum=parseInt(getVal('s_startnum'))||1001;
+  DB.settings.currency=getVal('s_currency');DB.settings.taxlabel=getVal('s_taxlabel');
+  DB.settings.taxrate=parseFloat(getVal('s_taxrate'))||18;
+  DB.settings.payterms=getVal('s_payterms');DB.settings.terms=getVal('s_terms');
+  save();notify('Document settings saved','success');
+}
+function uploadLogo(inp){
+  const file=inp.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const data=e.target.result;
+    DB.settings.logo=data;save();
+    document.getElementById('logoPreview').src=data;
+    const sbl=document.getElementById('sbLogo');if(sbl)sbl.src=data;
+    const ll=document.getElementById('loginLogo');if(ll)ll.src=data;
+    notify('Logo updated','success');
+  };
+  r.readAsDataURL(file);
+}
+
+// ══════════════════════════════════
+// USERS
+// ══════════════════════════════════
+function renderSettings(){
+  loadSettings();
+  const tb=document.getElementById('users-tbody');
+  if(!tb)return;
+  tb.innerHTML=DB.users.map(u=>`
+    <tr>
+      <td>${u.name}</td><td>${u.username}</td>
+      <td><span class="badge badge-gold">${roleLabel(u.role)}</span></td>
+      <td>${u.lastLogin||'Never'}</td>
+      <td><span class="badge badge-green">Active</span></td>
+      <td>
+        <button class="btn-icon" onclick="editUser(${u.id})" title="Edit"><i class="fas fa-edit"></i></button>
+        ${u.id!==1?`<button class="btn-icon" onclick="deleteUser(${u.id})" title="Delete" style="margin-left:4px"><i class="fas fa-trash"></i></button>`:''}
+      </td>
+    </tr>`).join('');
+}
+function openUserModal(id){
+  editingId=id||null;
+  const u=id?DB.users.find(x=>x.id===id):null;
+  document.getElementById('userModalTitle').textContent=id?'Edit User':'Add User';
+  document.getElementById('um_name').value=u?u.name:'';
+  document.getElementById('um_username').value=u?u.username:'';
+  document.getElementById('um_password').value='';
+  document.getElementById('um_role').value=u?u.role:'admin';
+  openModal('userModal');
+}
+function editUser(id){openUserModal(id);}
+function saveUser(){
+  const name=document.getElementById('um_name').value.trim();
+  const username=document.getElementById('um_username').value.trim();
+  const password=document.getElementById('um_password').value;
+  const role=document.getElementById('um_role').value;
+  if(!name||!username){notify('Fill all required fields','error');return;}
+  if(editingId){
+    const u=DB.users.find(x=>x.id===editingId);
+    if(u){u.name=name;u.username=username;if(password)u.password=password;u.role=role;}
+  } else {
+    if(!password){notify('Password required','error');return;}
+    DB.users.push({id:Date.now(),name,username,password,role,lastLogin:''});
+  }
+  save();closeModal('userModal');renderSettings();notify('User saved','success');
+}
+function deleteUser(id){
+  if(!confirm('Delete this user?'))return;
+  DB.users=DB.users.filter(u=>u.id!==id);
+  save();renderSettings();notify('User deleted','success');
+}
+
+// ══════════════════════════════════
+// DOCUMENT HELPERS
+// ══════════════════════════════════
+function getPrefix(type){
+  const m={quotation:DB.settings.qprefix||'QTN',lpo:DB.settings.lprefix||'LPO',contract:DB.settings.cprefix||'CON',delivery:DB.settings.dprefix||'DN',invoice:DB.settings.iprefix||'INV',ratelist:'RL'};
+  return m[type]||type.toUpperCase().slice(0,3);
+}
+function nextDocNo(type){
+  const arr=DB.documents[type]||[];
+  const prefix=getPrefix(type);
+  const n=(DB.settings.startnum||1001)+(arr.length);
+  return `${prefix}-${n}`;
+}
+function statusBadge(s){
+  const m={Draft:'badge-gray',Sent:'badge-blue',Approved:'badge-green',Rejected:'badge-red',Paid:'badge-green','Partially Paid':'badge-yellow','In Progress':'badge-blue',Completed:'badge-green','On Hold':'badge-yellow',Planning:'badge-gray','Low Stock':'badge-yellow','Out of Stock':'badge-red','In Stock':'badge-green'};
+  return `<span class="badge ${m[s]||'badge-gray'}">${s}</span>`;
+}
+function fmt(n){return(parseFloat(n)||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtCurrency(n){
+  const cur=DB.settings.currency||'INR';
+  const sym={INR:'₹',AED:'AED ',USD:'$'}[cur]||'';
+  return sym+fmt(n);
+}
+
+// ══════════════════════════════════
+// DOCUMENT MODAL
+// ══════════════════════════════════
+function openDocModal(type,id){
+  currentDocType=type;currentDocId=id||null;
+  const titles={quotation:'Quotation',lpo:'Local Purchase Order',contract:'Contract',delivery:'Delivery Note',invoice:'Invoice',ratelist:'Rate List'};
+  document.getElementById('docModalTitle').textContent=(id?'Edit ':'New ')+titles[type];
+  document.getElementById('docModalBody').innerHTML=buildDocForm(type,id?DB.documents[type].find(x=>x.id===id):null);
+  openModal('docModal');
+  addItemRowInit();
+  if(id)populateDocForm(id);
+  recalcItems();
+}
+function buildDocForm(type,doc){
+  const isRL=type==='ratelist';
+  const partyLabel={quotation:'Client',lpo:'Vendor',contract:'Party',delivery:'Deliver To',invoice:'Bill To',ratelist:'Prepared For'}[type]||'Party';
+  const refLabel={quotation:'Reference',lpo:'PO Reference',contract:'Contract Ref',delivery:'Against LPO/PO',invoice:'Against Quotation',ratelist:'Version'}[type]||'Reference';
+  return `
+  <div class="form-row cols-3">
+    <div class="field"><label>Document No</label><input type="text" id="d_no" value="${doc?doc.docNo:nextDocNo(type)}" readonly style="opacity:.6"/></div>
+    <div class="field"><label>Date</label><input type="date" id="d_date" value="${doc?doc.date:new Date().toISOString().slice(0,10)}"/></div>
+    <div class="field"><label>Status</label>
+      <select id="d_status">
+        ${type==='invoice'?'<option>Draft</option><option>Sent</option><option>Paid</option><option>Partially Paid</option><option>Overdue</option>':
+          type==='ratelist'?'<option>Draft</option><option>Approved</option><option>Expired</option>':
+          '<option>Draft</option><option>Sent</option><option>Approved</option><option>Rejected</option>'}
+      </select>
+    </div>
+  </div>
+  <div class="form-row cols-2">
+    <div class="field"><label>${partyLabel} Name</label><input type="text" id="d_party" value="${doc?doc.party:''}"/></div>
+    <div class="field"><label>${partyLabel} Contact</label><input type="text" id="d_partyContact" value="${doc?doc.partyContact||'':''}"/></div>
+  </div>
+  <div class="form-row cols-2">
+    <div class="field"><label>Project Name</label><input type="text" id="d_project" value="${doc?doc.project:''}"/></div>
+    <div class="field"><label>${refLabel}</label><input type="text" id="d_ref" value="${doc?doc.ref||'':''}"/></div>
+  </div>
+  ${!isRL?('<div class="form-row cols-2"><div class="field"><label>Site / Location</label><input type="text" id="d_location" value="'+(doc?doc.location||'':'')+'"/></div>'+(type==='invoice'?'<div class="field"><label>Due Date</label><input type="date" id="d_duedate" value="'+(doc?doc.duedate||'':'')+'" /></div>':type==='delivery'?'<div class="field"><label>Delivery Date</label><input type="date" id="d_deldate" value="'+(doc?doc.deldate||'':'')+'" /></div>':'<div class="field"><label>Valid Until</label><input type="date" id="d_valid" value="'+(doc?doc.valid||'':'')+'" /></div>')+'</div>'):''}
+  ${isRL?'<div class="form-row"><div class="field"><label>Rate List Type</label><select id="d_rltype"><option value="both">Labour + Materials</option><option value="labour">Labour Only</option><option value="material">Materials Only</option></select></div></div>':''}
+  <div style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+    <label style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text2)">Line Items</label>
+    <button type="button" class="btn btn-outline btn-sm" onclick="addItemRow()"><i class="fas fa-plus"></i> Add Row</button>
+  </div>
+  <div style="overflow-x:auto">
+  <table class="items-table" id="itemsTable">
+    <thead><tr>
+      <th style="width:35%">Description</th>
+      ${isRL?'<th>Category</th>':''}
+      <th style="width:8%">Unit</th>
+      <th style="width:9%">Qty</th>
+      <th style="width:13%">Rate</th>
+      <th style="width:13%">Amount</th>
+      <th style="width:4%"></th>
+    </tr></thead>
+    <tbody id="itemsBody"></tbody>
+  </table>
+  </div>
+  <div class="doc-total" id="docTotalBlock"></div>
+  <div class="form-row cols-2" style="margin-top:8px">
+    <div class="field"><label>Tax % (${DB.settings.taxlabel||'GST'})</label><input type="number" id="d_tax" value="${DB.settings.taxrate||18}" oninput="recalcItems()"/></div>
+    <div class="field"><label>Discount Amount</label><input type="number" id="d_discount" value="${doc?doc.discount||0:0}" oninput="recalcItems()"/></div>
+  </div>
+  <div class="form-row">
+    <div class="field"><label>Notes / Special Instructions</label><textarea id="d_notes" rows="2" placeholder="Any special instructions...">${doc?doc.notes||'':''}</textarea></div>
+  </div>
+  `;
+}
+function addItemRowInit(){document.getElementById('itemsBody').innerHTML='';addItemRow();}
+function addItemRow(desc='',unit='Nos',qty=1,rate=0,cat='Labour'){
+  const isRL=currentDocType==='ratelist';
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td><input type="text" value="${desc}" placeholder="Item description" oninput="recalcItems()"/></td>
+    ${isRL?`<td><select onchange="recalcItems()"><option>Labour</option><option>Material</option></select></td>`:''}
+    <td><select onchange="recalcItems()">
+      ${['Nos','Sq.Ft','Rft','Sq.M','Kg','Ltr','Bag','Set','LS'].map(u=>`<option${u===unit?' selected':''}>${u}</option>`).join('')}
+    </select></td>
+    <td><input type="number" value="${qty}" min="0" step="0.01" oninput="recalcItems()" style="text-align:right"/></td>
+    <td><input type="number" value="${rate||''}" min="0" step="0.01" placeholder="0.00" oninput="recalcItems()" style="text-align:right"/></td>
+    <td class="amt-cell" style="text-align:right;padding:6px 8px;font-size:12px;color:var(--gl);font-weight:600"></td>
+    <td><button type="button" class="del-row-btn" onclick="this.closest('tr').remove();recalcItems()"><i class="fas fa-times"></i></button></td>`;
+  document.getElementById('itemsBody').appendChild(tr);
+  recalcItems();
+}
+function recalcItems(){
+  const rows=[...document.querySelectorAll('#itemsBody tr')];
+  let subtotal=0;
+  rows.forEach(r=>{
+    const inputs=r.querySelectorAll('input[type=number]');
+    const qty=parseFloat(inputs[0]?.value)||0;
+    const rate=parseFloat(inputs[1]?.value)||0;
+    const amt=qty*rate;
+    subtotal+=amt;
+    const cell=r.querySelector('.amt-cell');
+    if(cell)cell.textContent=fmt(amt);
+  });
+  const taxRate=parseFloat(document.getElementById('d_tax')?.value)||0;
+  const discount=parseFloat(document.getElementById('d_discount')?.value)||0;
+  const taxAmt=(subtotal-discount)*taxRate/100;
+  const total=subtotal-discount+taxAmt;
+  const bl=document.getElementById('docTotalBlock');
+  if(bl) bl.innerHTML=`
+    <table style="margin-left:auto;border-collapse:collapse;min-width:240px">
+      <tr><td style="padding:3px 8px;color:var(--text2);text-align:right">Subtotal</td><td style="padding:3px 8px;text-align:right;min-width:100px">${fmt(subtotal)}</td></tr>
+      ${discount>0?`<tr><td style="padding:3px 8px;color:var(--text2);text-align:right">Discount</td><td style="padding:3px 8px;text-align:right;color:#e74c3c">- ${fmt(discount)}</td></tr>`:''}
+      ${taxRate>0?`<tr><td style="padding:3px 8px;color:var(--text2);text-align:right">${DB.settings.taxlabel||'GST'} (${taxRate}%)</td><td style="padding:3px 8px;text-align:right">${fmt(taxAmt)}</td></tr>`:''}
+      <tr style="border-top:2px solid var(--border2)"><td style="padding:6px 8px;font-weight:700;font-size:14px;text-align:right">TOTAL</td><td style="padding:6px 8px;font-weight:700;font-size:15px;color:var(--gl);text-align:right">${fmt(total)}</td></tr>
+    </table>`;
+}
+function getDocItems(){
+  return [...document.querySelectorAll('#itemsBody tr')].map(r=>{
+    const inputs=r.querySelectorAll('input');
+    const sel=r.querySelectorAll('select');
+    const isRL=currentDocType==='ratelist';
+    const desc=inputs[0]?.value||'';
+    const cat=isRL?(sel[0]?.value||'Labour'):'';
+    const unit=sel[isRL?1:0]?.value||'Nos';
+    const qty=parseFloat(inputs[isRL?1:1]?.value)||0;
+    const rate=parseFloat(inputs[isRL?2:2]?.value)||0;
+    return{desc,cat,unit,qty,rate,amount:qty*rate};
+  }).filter(i=>i.desc);
+}
+function populateDocForm(id){
+  const doc=DB.documents[currentDocType].find(x=>x.id===id);
+  if(!doc)return;
+  document.getElementById('d_status').value=doc.status||'Draft';
+  // items
+  document.getElementById('itemsBody').innerHTML='';
+  (doc.items||[]).forEach(i=>addItemRow(i.desc,i.unit,i.qty,i.rate,i.cat));
+  recalcItems();
+}
+function saveDoc(draft=false){
+  const items=getDocItems();
+  const subtotal=items.reduce((s,i)=>s+i.amount,0);
+  const discount=parseFloat(document.getElementById('d_discount')?.value)||0;
+  const taxRate=parseFloat(document.getElementById('d_tax')?.value)||0;
+  const taxAmt=(subtotal-discount)*taxRate/100;
+  const total=subtotal-discount+taxAmt;
+  const doc={
+    id:currentDocId||Date.now(),
+    docNo:getVal('d_no'),date:getVal('d_date'),status:getVal('d_status'),
+    party:getVal('d_party'),partyContact:getVal('d_partyContact'),
+    project:getVal('d_project'),ref:getVal('d_ref'),
+    location:getVal('d_location'),valid:getVal('d_valid'),
+    duedate:getVal('d_duedate'),deldate:getVal('d_deldate'),
+    notes:getVal('d_notes'),discount,taxRate,taxAmt,subtotal,total,
+    items,createdBy:currentUser?.name,
+    rltype:getVal('d_rltype'),
+    updatedAt:new Date().toISOString()
+  };
+  const arr=DB.documents[currentDocType];
+  if(currentDocId){const idx=arr.findIndex(x=>x.id===currentDocId);if(idx>=0)arr[idx]=doc;}
+  else arr.push(doc);
+  save();renderDocsTable(currentDocType);
+  notify('Document saved','success');
+  if(draft)closeModal('docModal');
+}
+
+// ══════════════════════════════════
+// PDF GENERATION
+// ══════════════════════════════════
+function generatePDF(){
+  saveDoc(false);
+  const items=getDocItems();
+  const subtotal=items.reduce((s,i)=>s+i.amount,0);
+  const discount=parseFloat(document.getElementById('d_discount')?.value)||0;
+  const taxRate=parseFloat(document.getElementById('d_tax')?.value)||0;
+  const taxAmt=(subtotal-discount)*taxRate/100;
+  const total=subtotal-discount+taxAmt;
+  const data={
+    docNo:getVal('d_no'),date:getVal('d_date'),status:getVal('d_status'),
+    party:getVal('d_party'),partyContact:getVal('d_partyContact'),
+    project:getVal('d_project'),ref:getVal('d_ref'),
+    location:getVal('d_location'),valid:getVal('d_valid'),
+    duedate:getVal('d_duedate'),deldate:getVal('d_deldate'),
+    notes:getVal('d_notes'),discount,taxRate,taxAmt,subtotal,total,
+    items,rltype:getVal('d_rltype')
+  };
+  buildPDF(currentDocType,data);
+  closeModal('docModal');
+}
+function buildPDF(type,data){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,H=297;
+  const ml=15,mr=15,mt=10;
+  const cw=W-ml-mr;
+  const s=DB.settings;
+  const gold=[139,105,20];
+  const black=[0,0,0];
+  const lightGray=[240,240,240];
+  const darkGray=[60,60,60];
+  let y=mt;
+
+  // ── HEADER BAR ──
+  doc.setFillColor(...gold);
+  doc.rect(0,0,W,28,'F');
+  // logo area (white box)
+  doc.setFillColor(255,255,255);
+  doc.roundedRect(ml,3,22,22,2,2,'F');
+  // try drawing logo
+  if(s.logo&&s.logo.startsWith('data:')){
+    try{doc.addImage(s.logo,'PNG',ml+1,3.5,20,21);}catch(e){}
+  }
+  // Company name
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(16);doc.setFont('helvetica','bold');
+  doc.text(s.name||'DEGRAI INTERIORS',ml+26,12);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text(s.tagline||'Where Design Meets Flawless Execution',ml+26,18);
+  // Doc type label top right
+  const typeLabels={quotation:'QUOTATION',lpo:'LOCAL PURCHASE ORDER',contract:'CONTRACT',delivery:'DELIVERY NOTE',invoice:'INVOICE',ratelist:'RATE LIST'};
+  doc.setFontSize(11);doc.setFont('helvetica','bold');
+  const typeW=doc.getTextWidth(typeLabels[type]||'DOCUMENT')+6;
+  doc.setTextColor(255,255,255);
+  doc.text(typeLabels[type]||'DOCUMENT',W-mr,14,{align:'right'});
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text(data.docNo,W-mr,20,{align:'right'});
+
+  y=34;
+  // ── INFO BLOCKS ──
+  // Left: From
+  doc.setTextColor(...black);
+  doc.setFontSize(7.5);doc.setFont('helvetica','bold');
+  doc.setTextColor(...gold);
+  doc.text('FROM',ml,y);
+  doc.setTextColor(...darkGray);
+  doc.setFont('helvetica','bold');doc.setFontSize(9);
+  doc.text(s.name||'Degrai Interiors',ml,y+5);
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);
+  doc.setTextColor(...black);
+  const addr=(s.address||'Ahmedabad, Gujarat').split('\n');
+  let ay=y+10;
+  addr.forEach(l=>{doc.text(l,ml,ay);ay+=4;});
+  if(s.phone){doc.text('Phone: '+s.phone,ml,ay);ay+=4;}
+  if(s.email){doc.text('Email: '+s.email,ml,ay);ay+=4;}
+  if(s.gstin){doc.text('GSTIN: '+s.gstin,ml,ay);ay+=4;}
+
+  // Right: To
+  const rx=W/2+8;
+  doc.setFontSize(7.5);doc.setFont('helvetica','bold');
+  doc.setTextColor(...gold);
+  doc.text({quotation:'BILL TO',lpo:'VENDOR',contract:'PARTY',delivery:'DELIVER TO',invoice:'BILL TO',ratelist:'PREPARED FOR'}[type]||'TO',rx,y);
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...darkGray);
+  doc.text(data.party||'—',rx,y+5);
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...black);
+  let by=y+10;
+  if(data.partyContact){doc.text('Contact: '+data.partyContact,rx,by);by+=4;}
+  if(data.project){doc.text('Project: '+data.project,rx,by);by+=4;}
+  if(data.location){doc.text('Location: '+data.location,rx,by);by+=4;}
+
+  // Details row (right column)
+  const detY=Math.max(ay,by)+4;
+  // separator line
+  doc.setDrawColor(...gold);doc.setLineWidth(0.5);
+  doc.line(ml,detY,W-mr,detY);
+  // doc details mini table
+  doc.setFontSize(7.5);
+  const details=[
+    ['Date',data.date||''],
+    ['Doc No',data.docNo||''],
+    ...(data.ref?[['Reference',data.ref]]:[]),
+    ...(data.valid?[['Valid Until',data.valid]]:[]),
+    ...(data.duedate?[['Due Date',data.duedate]]:[]),
+    ...(data.deldate?[['Delivery Date',data.deldate]]:[]),
+    ['Status',data.status||'Draft'],
+  ];
+  let dx=ml,dY=detY+5;
+  const colW=cw/Math.min(details.length,4);
+  details.forEach((d,i)=>{
+    const cx=ml+(i%4)*colW;
+    if(i>0&&i%4===0)dY+=8;
+    doc.setFont('helvetica','bold');doc.setTextColor(...gold);
+    doc.text(d[0],cx,dY);
+    doc.setFont('helvetica','normal');doc.setTextColor(...black);
+    doc.text(d[1],cx,dY+4);
+  });
+
+  y=dY+10;
+  doc.setDrawColor(...gold);doc.setLineWidth(0.3);
+  doc.line(ml,y,W-mr,y);
+  y+=4;
+
+  // ── ITEMS TABLE ──
+  const isRL=type==='ratelist';
+  const head=isRL?
+    [['#','Description','Category','Unit','Rate']]:
+    [['#','Description','Unit','Qty','Rate','Amount']];
+  const body=data.items.map((it,i)=>isRL?
+    [String(i+1),it.desc,it.cat||'',it.unit,fmt(it.rate)]:
+    [String(i+1),it.desc,it.unit,String(it.qty),fmt(it.rate),fmt(it.amount)]);
+
+  // A4 printable width = 180mm (210 - 15left - 15right)
+  // Normal doc: #(8) | Description(88) | Unit(16) | Qty(14) | Rate(27) | Amount(27) = 180
+  // Rate List:  #(8) | Description(74) | Category(24) | Unit(16) | Rate(58) = 180
+  const colWidths=isRL?[8,74,24,16,58]:[8,88,16,14,27,27];
+  doc.autoTable({
+    startY:y,
+    head,body,
+    margin:{left:ml,right:mr},
+    tableWidth:cw,
+    styles:{font:'helvetica',fontSize:8,textColor:black,cellPadding:{top:3.5,bottom:3.5,left:4,right:4},lineColor:[220,220,220],lineWidth:0.15,overflow:'linebreak'},
+    headStyles:{fillColor:gold,textColor:[255,255,255],fontStyle:'bold',fontSize:8},
+    alternateRowStyles:{fillColor:[249,249,249]},
+    columnStyles:isRL?{
+      0:{cellWidth:colWidths[0],halign:'center'},
+      1:{cellWidth:colWidths[1]},
+      2:{cellWidth:colWidths[2],halign:'center'},
+      3:{cellWidth:colWidths[3],halign:'center'},
+      4:{cellWidth:colWidths[4],halign:'right'}
+    }:{
+      0:{cellWidth:colWidths[0],halign:'center'},
+      1:{cellWidth:colWidths[1]},
+      2:{cellWidth:colWidths[2],halign:'center'},
+      3:{cellWidth:colWidths[3],halign:'right'},
+      4:{cellWidth:colWidths[4],halign:'right'},
+      5:{cellWidth:colWidths[5],halign:'right'}
+    },
+    didDrawPage:(d)=>{y=d.cursor.y;}
+  });
+  y=doc.lastAutoTable.finalY+4;
+
+  // ── TOTALS ──
+  // Align totals box exactly under Amount column
+  // Amount col = colWidths[5]=27mm, ends at W-mr=195mm
+  // Totals box = 54mm wide: label(30) + value(24), right-edge flush with table
+  if(!isRL){
+    const tw=54,lw=30,tx=W-mr-tw; // right-flush with table edge
+    const rows=[['Subtotal',fmt(data.subtotal)]];
+    if(data.discount>0)rows.push(['Discount','- '+fmt(data.discount)]);
+    if(data.taxRate>0)rows.push([(s.taxlabel||'GST')+' ('+data.taxRate+'%)',fmt(data.taxAmt)]);
+    rows.push(['TOTAL',fmt(data.total)]);
+    rows.forEach((r,i)=>{
+      const isTotal=i===rows.length-1;
+      const rowH=isTotal?8.5:7;
+      // background
+      if(isTotal){doc.setFillColor(...gold);}
+      else{doc.setFillColor(i%2===0?248:242,i%2===0?248:242,i%2===0?248:242);}
+      doc.rect(tx,y,tw,rowH,'F');
+      // outer border
+      doc.setDrawColor(200,200,200);doc.setLineWidth(0.1);
+      doc.rect(tx,y,tw,rowH,'S');
+      // text color
+      doc.setTextColor(isTotal?255:50,isTotal?255:50,isTotal?255:50);
+      doc.setFont('helvetica',isTotal?'bold':'normal');
+      doc.setFontSize(isTotal?8.5:7.5);
+      // label — left aligned in label portion
+      doc.text(r[0],tx+3,y+rowH-2.0);
+      // value — right aligned, right-padded 3mm from edge
+      doc.text(r[1],tx+tw-3,y+rowH-2.0,{align:'right'});
+      y+=rowH;
+    });
+    y+=5;
+  }
+
+  y+=4;
+
+  // ── NOTES ──
+  if(data.notes){
+    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(...gold);
+    doc.text('Notes:',ml,y);y+=4;
+    doc.setFont('helvetica','normal');doc.setTextColor(...black);
+    const notesLines=doc.splitTextToSize(data.notes,cw);
+    doc.text(notesLines,ml,y);y+=notesLines.length*4+4;
+  }
+
+  // ── TERMS ──
+  const showTerms=document.getElementById('t_termsall')?.classList.contains('on')!==false;
+  if(showTerms&&s.terms){
+    if(y>230){doc.addPage();y=20;}
+    doc.setDrawColor(...gold);doc.setLineWidth(0.3);
+    doc.line(ml,y,W-mr,y);y+=4;
+    doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(...gold);
+    doc.text('Terms & Conditions',ml,y);y+=4;
+    doc.setFont('helvetica','normal');doc.setTextColor(...darkGray);
+    const tlines=doc.splitTextToSize(s.terms,cw);
+    doc.text(tlines,ml,y);y+=tlines.length*3.5+4;
+  }
+
+  // ── BANK DETAILS (invoices) ──
+  if(type==='invoice'&&s.bank){
+    if(y>240){doc.addPage();y=20;}
+    doc.setDrawColor(...gold);doc.setLineWidth(0.3);
+    doc.line(ml,y,W-mr,y);y+=4;
+    doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(...gold);
+    doc.text('Bank Details',ml,y);y+=4;
+    doc.setFont('helvetica','normal');doc.setTextColor(...black);
+    const blines=doc.splitTextToSize(s.bank,cw/2);
+    doc.text(blines,ml,y);
+  }
+
+  // ── FOOTER (each page) ──
+  const pgCount=doc.getNumberOfPages();
+  for(let p=1;p<=pgCount;p++){
+    doc.setPage(p);
+    doc.setFillColor(...gold);doc.rect(0,H-12,W,12,'F');
+    doc.setTextColor(255,255,255);doc.setFontSize(7);doc.setFont('helvetica','normal');
+    doc.text(`${s.name||'Degrai Interiors'}  |  ${s.phone||''}  |  ${s.email||''}  |  ${s.website||''}`,W/2,H-6,{align:'center'});
+    doc.text(`Page ${p} of ${pgCount}`,W-mr,H-6,{align:'right'});
+  }
+
+  doc.save(`${data.docNo}_${type}.pdf`);
+  notify('PDF generated & downloaded','success');
+}
+
+// ══════════════════════════════════
+// DOCS TABLE
+// ══════════════════════════════════
+function renderDocsTable(type){
+  const tb=document.getElementById(`${type}-tbody`);
+  if(!tb)return;
+  const arr=DB.documents[type]||[];
+  if(arr.length===0){tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3)"><i class="fas fa-file" style="font-size:24px;display:block;margin-bottom:8px"></i>No ${type} found. Create your first one.</td></tr>`;return;}
+  tb.innerHTML=arr.map(d=>`
+    <tr>
+      <td><b style="color:var(--gl)">${d.docNo}</b></td>
+      <td>${d.party||'—'}</td>
+      <td>${d.project||'—'}</td>
+      <td>${d.date||'—'}</td>
+      <td style="text-align:right">${type==='delivery'?((d.items||[]).length+' items'):fmt(d.total||0)}</td>
+      <td>${statusBadge(d.status||'Draft')}</td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="btn-icon" onclick="openDocModal('${type}',${d.id})" title="Edit"><i class="fas fa-edit"></i></button>
+          <button class="btn-icon" onclick="regenPDF('${type}',${d.id})" title="Download PDF"><i class="fas fa-file-pdf" style="color:#e74c3c"></i></button>
+          <button class="btn-icon" onclick="deleteDoc('${type}',${d.id})" title="Delete"><i class="fas fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+function regenPDF(type,id){
+  const d=DB.documents[type].find(x=>x.id===id);
+  if(d)buildPDF(type,d);
+}
+function deleteDoc(type,id){
+  if(!confirm('Move to trash?'))return;
+  const arr=DB.documents[type];
+  const idx=arr.findIndex(x=>x.id===id);
+  if(idx>=0){DB.trash.push({type,name:arr[idx].docNo,data:arr[idx],deletedAt:new Date().toLocaleString()});arr.splice(idx,1);}
+  save();renderDocsTable(type);renderTrash();notify('Moved to trash','success');
+}
+function filterDocs(type,q){
+  const tb=document.getElementById(`${type}-tbody`);if(!tb)return;
+  const arr=DB.documents[type]||[];
+  const f=arr.filter(d=>!q||(d.docNo+d.party+d.project).toLowerCase().includes(q.toLowerCase()));
+  // re-render filtered
+  if(f.length===0){tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text3)">No results found</td></tr>`;return;}
+  tb.innerHTML=f.map(d=>`<tr><td><b style="color:var(--gl)">${d.docNo}</b></td><td>${d.party||'—'}</td><td>${d.project||'—'}</td><td>${d.date||'—'}</td><td style="text-align:right">${fmt(d.total||0)}</td><td>${statusBadge(d.status||'Draft')}</td><td><div style="display:flex;gap:4px"><button class="btn-icon" onclick="openDocModal('${type}',${d.id})" title="Edit"><i class="fas fa-edit"></i></button><button class="btn-icon" onclick="regenPDF('${type}',${d.id})" title="PDF"><i class="fas fa-file-pdf" style="color:#e74c3c"></i></button><button class="btn-icon" onclick="deleteDoc('${type}',${d.id})" title="Delete"><i class="fas fa-trash"></i></button></div></td></tr>`).join('');
+}
+
+// ══════════════════════════════════
+// PROJECTS
+// ══════════════════════════════════
+function renderProjects(){
+  const tb=document.getElementById('projects-tbody');if(!tb)return;
+  const ps=document.getElementById('projStats');
+  if(ps){
+    const total=DB.projects.length;
+    const active=DB.projects.filter(p=>p.status==='In Progress').length;
+    const done=DB.projects.filter(p=>p.status==='Completed').length;
+    const totalVal=DB.projects.reduce((s,p)=>s+(p.value||0),0);
+    ps.innerHTML=`
+      <div class="stat-card"><div class="stat-icon" style="background:rgba(139,105,20,0.15)"><i class="fas fa-project-diagram" style="color:var(--gold)"></i></div><div class="stat-info"><div class="val">${total}</div><div class="lbl">Total Projects</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:rgba(52,152,219,0.15)"><i class="fas fa-spinner" style="color:#3498db"></i></div><div class="stat-info"><div class="val">${active}</div><div class="lbl">Active</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:rgba(46,204,113,0.15)"><i class="fas fa-check-circle" style="color:#2ecc71"></i></div><div class="stat-info"><div class="val">${done}</div><div class="lbl">Completed</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:rgba(139,105,20,0.15)"><i class="fas fa-rupee-sign" style="color:var(--gold)"></i></div><div class="stat-info"><div class="val" style="font-size:16px">${fmtCurrency(totalVal)}</div><div class="lbl">Total Value</div></div></div>`;
+  }
+  if(DB.projects.length===0){tb.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text3)"><i class="fas fa-project-diagram" style="font-size:24px;display:block;margin-bottom:8px"></i>No projects yet.</td></tr>`;return;}
+  tb.innerHTML=DB.projects.map(p=>`
+    <tr>
+      <td><b>${p.name}</b>${p.location?`<br><small style="color:var(--text2)">${p.location}</small>`:''}</td>
+      <td>${p.client||'—'}</td>
+      <td style="text-align:right">${fmtCurrency(p.value||0)}</td>
+      <td>${p.start||'—'}</td>
+      <td>${p.deadline||'—'}</td>
+      <td style="min-width:100px">
+        <div class="progress"><div class="progress-bar" style="width:${p.progress||0}%"></div></div>
+        <small style="color:var(--text2)">${p.progress||0}%</small>
+      </td>
+      <td>${statusBadge(p.status)}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn-icon" onclick="editProject(${p.id})" title="Edit"><i class="fas fa-edit"></i></button>
+        <button class="btn-icon" onclick="deleteProject(${p.id})" title="Delete"><i class="fas fa-trash"></i></button>
+      </div></td>
+    </tr>`).join('');
+}
+function openProjectModal(id){
+  editingId=id||null;
+  const p=id?DB.projects.find(x=>x.id===id):null;
+  document.getElementById('projModalTitle').textContent=id?'Edit Project':'New Project';
+  setVal('pm_name',p?p.name:'');setVal('pm_client',p?p.client:'');
+  setVal('pm_value',p?p.value:'');setVal('pm_status',p?p.status:'Planning');
+  setVal('pm_start',p?p.start:'');setVal('pm_deadline',p?p.deadline:'');
+  setVal('pm_location',p?p.location:'');setVal('pm_progress',p?p.progress:0);
+  setVal('pm_desc',p?p.desc:'');
+  openModal('projectModal');
+}
+function editProject(id){openProjectModal(id);}
+function saveProject(){
+  const proj={
+    id:editingId||Date.now(),
+    name:getVal('pm_name'),client:getVal('pm_client'),
+    value:parseFloat(getVal('pm_value'))||0,status:getVal('pm_status'),
+    start:getVal('pm_start'),deadline:getVal('pm_deadline'),
+    location:getVal('pm_location'),progress:parseInt(getVal('pm_progress'))||0,
+    desc:getVal('pm_desc')
+  };
+  if(!proj.name){notify('Project name required','error');return;}
+  if(editingId){const i=DB.projects.findIndex(x=>x.id===editingId);if(i>=0)DB.projects[i]=proj;}
+  else DB.projects.push(proj);
+  save();closeModal('projectModal');renderProjects();
+  // refresh procurement/report project dropdowns
+  populateProjectDropdowns();
+  notify('Project saved','success');
+}
+function deleteProject(id){
+  if(!confirm('Delete this project?'))return;
+  const p=DB.projects.find(x=>x.id===id);
+  if(p)DB.trash.push({type:'Project',name:p.name,data:p,deletedAt:new Date().toLocaleString()});
+  DB.projects=DB.projects.filter(x=>x.id!==id);
+  save();renderProjects();renderTrash();notify('Project deleted','success');
+}
+function populateProjectDropdowns(){
+  ['rm_project','pcm_project','fm_project'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const isInput=el.tagName==='INPUT';
+    if(isInput)return;
+    const prev=el.value;
+    el.innerHTML='<option value="">— Select Project —</option>'+DB.projects.map(p=>`<option value="${p.name}"${p.name===prev?' selected':''}>${p.name}</option>`).join('');
+  });
+}
+
+// ══════════════════════════════════
+// PROCUREMENT
+// ══════════════════════════════════
+function renderProcurement(){
+  const tb=document.getElementById('procurement-tbody');if(!tb)return;
+  if(DB.procurement.length===0){tb.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text3)">No procurement requests yet.</td></tr>`;return;}
+  tb.innerHTML=DB.procurement.map(p=>`
+    <tr>
+      <td><b style="color:var(--gl)">${p.prNo}</b></td>
+      <td>${p.item}</td><td>${p.vendor||'—'}</td><td>${p.project||'—'}</td>
+      <td style="text-align:right">${p.qty} ${p.unit}</td>
+      <td style="text-align:right">${fmtCurrency(p.amount||0)}</td>
+      <td>${statusBadge(p.status||'Pending')}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn-icon" onclick="updateProcStatus(${p.id},'Approved')" title="Approve" style="color:#2ecc71"><i class="fas fa-check"></i></button>
+        <button class="btn-icon" onclick="deleteProcurement(${p.id})" title="Delete"><i class="fas fa-trash"></i></button>
+      </div></td>
+    </tr>`).join('');
+}
+function openProcurementModal(){populateProjectDropdowns();setVal('pcm_date',new Date().toISOString().slice(0,10));openModal('procurementModal');}
+function saveProcurement(){
+  const pr={
+    id:Date.now(),prNo:`PR-${1000+DB.procurement.length+1}`,
+    item:getVal('pcm_item'),vendor:getVal('pcm_vendor'),
+    project:getVal('pcm_project'),date:getVal('pcm_date'),
+    qty:getVal('pcm_qty'),unit:getVal('pcm_unit'),
+    amount:parseFloat(getVal('pcm_amount'))||0,
+    notes:getVal('pcm_notes'),status:'Pending'
+  };
+  if(!pr.item){notify('Item name required','error');return;}
+  DB.procurement.push(pr);save();closeModal('procurementModal');renderProcurement();notify('Procurement request saved','success');
+}
+function updateProcStatus(id,status){
+  const p=DB.procurement.find(x=>x.id===id);
+  if(p){p.status=status;save();renderProcurement();notify('Status updated','success');}
+}
+function deleteProcurement(id){
+  if(!confirm('Delete?'))return;
+  DB.procurement=DB.procurement.filter(x=>x.id!==id);
+  save();renderProcurement();notify('Deleted','success');
+}
+
+// ══════════════════════════════════
+// FINANCE
+// ══════════════════════════════════
+function renderFinance(){
+  const tb=document.getElementById('finance-tbody');if(!tb)return;
+  const fs=document.getElementById('finStats');
+  const income=DB.finance.filter(f=>f.type==='income').reduce((s,f)=>s+f.amount,0);
+  const expense=DB.finance.filter(f=>f.type==='expense').reduce((s,f)=>s+f.amount,0);
+  const balance=income-expense;
+  if(fs){
+    fs.innerHTML=`
+      <div class="stat-card"><div class="stat-icon" style="background:rgba(46,204,113,0.15)"><i class="fas fa-arrow-down" style="color:#2ecc71"></i></div><div class="stat-info"><div class="val" style="font-size:16px;color:#2ecc71">${fmtCurrency(income)}</div><div class="lbl">Total Income</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:rgba(231,76,60,0.15)"><i class="fas fa-arrow-up" style="color:#e74c3c"></i></div><div class="stat-info"><div class="val" style="font-size:16px;color:#e74c3c">${fmtCurrency(expense)}</div><div class="lbl">Total Expense</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:rgba(139,105,20,0.15)"><i class="fas fa-wallet" style="color:var(--gold)"></i></div><div class="stat-info"><div class="val" style="font-size:16px;color:${balance>=0?'#2ecc71':'#e74c3c'}">${fmtCurrency(Math.abs(balance))}</div><div class="lbl">${balance>=0?'Net Profit':'Net Loss'}</div></div></div>`;
+  }
+  if(DB.finance.length===0){tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3)">No transactions yet.</td></tr>`;return;}
+  let runBal=0;const sorted=[...DB.finance].sort((a,b)=>a.date>b.date?1:-1);
+  tb.innerHTML=sorted.map(f=>{runBal+=f.type==='income'?f.amount:-f.amount;return`
+    <tr>
+      <td>${f.date}</td><td>${f.desc}</td>
+      <td><span class="badge badge-gray">${f.category}</span></td>
+      <td><span class="badge ${f.type==='income'?'badge-green':'badge-red'}">${f.type==='income'?'Income':'Expense'}</span></td>
+      <td style="text-align:right;color:${f.type==='income'?'#2ecc71':'#e74c3c'}">${f.type==='income'?'+':'-'}${fmtCurrency(f.amount)}</td>
+      <td style="text-align:right;color:${runBal>=0?'var(--text)':'#e74c3c'}">${fmtCurrency(runBal)}</td>
+      <td><button class="btn-icon" onclick="deleteFinance(${f.id})" title="Delete"><i class="fas fa-trash"></i></button></td>
+    </tr>`}).join('');
+}
+function openFinanceModal(){setVal('fm_date',new Date().toISOString().slice(0,10));openModal('financeModal');}
+function saveFinance(){
+  const f={id:Date.now(),date:getVal('fm_date'),type:getVal('fm_type'),desc:getVal('fm_desc'),category:getVal('fm_cat'),amount:parseFloat(getVal('fm_amount'))||0,project:getVal('fm_project'),ref:getVal('fm_ref')};
+  if(!f.desc||!f.amount){notify('Fill description and amount','error');return;}
+  DB.finance.push(f);save();closeModal('financeModal');renderFinance();notify('Transaction saved','success');
+}
+function deleteFinance(id){if(!confirm('Delete?'))return;DB.finance=DB.finance.filter(x=>x.id!==id);save();renderFinance();}
+function exportFinance(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF();
+  const gold=[139,105,20];
+  doc.setFontSize(16);doc.setTextColor(...gold);doc.text('Finance Report — '+DB.settings.name,14,20);
+  doc.setFontSize(10);doc.setTextColor(0,0,0);
+  const income=DB.finance.filter(f=>f.type==='income').reduce((s,f)=>s+f.amount,0);
+  const expense=DB.finance.filter(f=>f.type==='expense').reduce((s,f)=>s+f.amount,0);
+  doc.text(`Total Income: ${fmtCurrency(income)}`,14,32);
+  doc.text(`Total Expense: ${fmtCurrency(expense)}`,14,40);
+  doc.text(`Net Balance: ${fmtCurrency(income-expense)}`,14,48);
+  doc.autoTable({startY:56,head:[['Date','Description','Category','Type','Amount']],body:DB.finance.map(f=>[f.date,f.desc,f.category,f.type,fmtCurrency(f.amount)]),styles:{fontSize:8}});
+  doc.save('Finance_Report.pdf');
+}
+
+// ══════════════════════════════════
+// SALARY & HR
+// ══════════════════════════════════
+function renderSalary(){
+  const tb=document.getElementById('salary-tbody');if(!tb)return;
+  if(DB.employees.length===0){tb.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text3)">No employees added yet.</td></tr>`;return;}
+  tb.innerHTML=DB.employees.map(e=>`
+    <tr>
+      <td><b style="color:var(--gl)">${e.empId}</b></td>
+      <td>${e.name}</td><td>${e.role||'—'}</td><td>${e.dept||'—'}</td>
+      <td style="text-align:right">${fmtCurrency(e.salary||0)}</td>
+      <td>${e.join||'—'}</td>
+      <td><span class="badge badge-green">Active</span></td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn-icon" onclick="editEmployee(${e.id})" title="Edit"><i class="fas fa-edit"></i></button>
+        <button class="btn-icon" onclick="genSalarySlip(${e.id})" title="Salary Slip"><i class="fas fa-file-invoice-dollar"></i></button>
+        <button class="btn-icon" onclick="deleteEmployee(${e.id})" title="Delete"><i class="fas fa-trash"></i></button>
+      </div></td>
+    </tr>`).join('');
+}
+function openEmployeeModal(id){
+  editingId=id||null;
+  const e=id?DB.employees.find(x=>x.id===id):null;
+  setVal('em_name',e?e.name:'');setVal('em_id',e?e.empId:'EMP'+(100+DB.employees.length+1));
+  setVal('em_role',e?e.role:'');setVal('em_dept',e?e.dept:'Site');
+  setVal('em_salary',e?e.salary:'');setVal('em_join',e?e.join:'');
+  setVal('em_phone',e?e.phone:'');setVal('em_aadhar',e?e.aadhar:'');
+  openModal('empModal');
+}
+function editEmployee(id){openEmployeeModal(id);}
+function saveEmployee(){
+  const emp={id:editingId||Date.now(),empId:getVal('em_id'),name:getVal('em_name'),role:getVal('em_role'),dept:getVal('em_dept'),salary:parseFloat(getVal('em_salary'))||0,join:getVal('em_join'),phone:getVal('em_phone'),aadhar:getVal('em_aadhar')};
+  if(!emp.name){notify('Name required','error');return;}
+  if(editingId){const i=DB.employees.findIndex(x=>x.id===editingId);if(i>=0)DB.employees[i]=emp;}
+  else DB.employees.push(emp);
+  save();closeModal('empModal');renderSalary();renderAttendance();notify('Employee saved','success');
+}
+function deleteEmployee(id){
+  if(!confirm('Delete employee?'))return;
+  DB.employees=DB.employees.filter(x=>x.id!==id);
+  save();renderSalary();renderAttendance();notify('Employee deleted','success');
+}
+function generatePayroll(){
+  const {jsPDF}=window.jspdf;
+  const d=new jsPDF();
+  const gold=[139,105,20];
+  d.setFontSize(16);d.setTextColor(...gold);d.text('Payroll Report — '+DB.settings.name,14,20);
+  d.setFontSize(10);d.setTextColor(0,0,0);d.text('Month: '+new Date().toLocaleString('en-IN',{month:'long',year:'numeric'}),14,30);
+  const total=DB.employees.reduce((s,e)=>s+e.salary,0);
+  d.text('Total Payroll: '+fmtCurrency(total),14,40);
+  d.autoTable({startY:50,head:[['Emp ID','Name','Role','Department','Basic Salary']],body:DB.employees.map(e=>[e.empId,e.name,e.role||'',e.dept||'',fmtCurrency(e.salary)]),styles:{fontSize:9}});
+  d.save('Payroll_Report.pdf');notify('Payroll PDF generated','success');
+}
+function genSalarySlip(id){
+  const e=DB.employees.find(x=>x.id===id);if(!e)return;
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF();
+  const gold=[139,105,20];const s=DB.settings;
+  doc.setFillColor(...gold);doc.rect(0,0,210,25,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont('helvetica','bold');
+  doc.text(s.name||'Degrai Interiors',14,12);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.text('SALARY SLIP',14,20);
+  doc.setTextColor(0,0,0);doc.setFontSize(10);
+  const mo=new Date().toLocaleString('en-IN',{month:'long',year:'numeric'});
+  doc.text('Month: '+mo,14,35);doc.text('Employee ID: '+e.empId,14,43);
+  doc.text('Name: '+e.name,14,51);doc.text('Designation: '+(e.role||''),14,59);
+  doc.text('Department: '+(e.dept||''),14,67);
+  doc.setDrawColor(...gold);doc.line(14,72,196,72);
+  doc.autoTable({startY:76,head:[['Earnings','Amount']],body:[['Basic Salary',fmtCurrency(e.salary)],['Total Net Pay',fmtCurrency(e.salary)]],styles:{fontSize:9},headStyles:{fillColor:gold,textColor:[255,255,255]}});
+  doc.save(`Salary_Slip_${e.name.replace(/\s/g,'_')}.pdf`);
+  notify('Salary slip generated','success');
+}
+
+// ══════════════════════════════════
+// ATTENDANCE
+// ══════════════════════════════════
+function renderAttendance(){
+  const attList=document.getElementById('attEmployeeList');
+  const attSum=document.getElementById('attSummary');
+  if(!attList)return;
+  const month=document.getElementById('attMonth')?.value||new Date().toISOString().slice(0,7);
+  if(DB.employees.length===0){attList.innerHTML='<p style="color:var(--text2);text-align:center;padding:20px">Add employees first</p>';return;}
+  attList.innerHTML=DB.employees.map(e=>{
+    const key=`${month}_${e.id}`;
+    const att=DB.attendance[key]||{present:0,absent:0,half:0};
+    return`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-weight:600">${e.name}</div><div style="font-size:11px;color:var(--text2)">${e.role||''}</div></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div style="text-align:center"><div style="font-size:11px;color:var(--text2)">P</div><input type="number" value="${att.present}" min="0" style="width:44px;background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:4px;color:#2ecc71;text-align:center;font-size:12px" onchange="saveAtt('${key}','present',this.value)"/></div>
+        <div style="text-align:center"><div style="font-size:11px;color:var(--text2)">A</div><input type="number" value="${att.absent}" min="0" style="width:44px;background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:4px;color:#e74c3c;text-align:center;font-size:12px" onchange="saveAtt('${key}','absent',this.value)"/></div>
+        <div style="text-align:center"><div style="font-size:11px;color:var(--text2)">H</div><input type="number" value="${att.half}" min="0" style="width:44px;background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:4px;color:#f39c12;text-align:center;font-size:12px" onchange="saveAtt('${key}','half',this.value)"/></div>
+      </div>
+    </div>`;
+  }).join('');
+  if(attSum){
+    const rows=DB.employees.map(e=>{const key=`${month}_${e.id}`;const a=DB.attendance[key]||{};return`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><span>${e.name}</span><span><span style="color:#2ecc71">${a.present||0}P</span> / <span style="color:#e74c3c">${a.absent||0}A</span> / <span style="color:#f39c12">${a.half||0}H</span></span></div>`;}).join('');
+    attSum.innerHTML=rows||'<p style="color:var(--text2);text-align:center;padding:20px">No data</p>';
+  }
+}
+document.getElementById('attMonth')?.addEventListener('change',renderAttendance);
+function saveAtt(key,field,val){if(!DB.attendance[key])DB.attendance[key]={present:0,absent:0,half:0};DB.attendance[key][field]=parseInt(val)||0;save();}
+
+// ══════════════════════════════════
+// PROGRESS REPORTS
+// ══════════════════════════════════
+function renderReports(){
+  const tb=document.getElementById('reports-tbody');if(!tb)return;
+  if(DB.reports.length===0){tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3)">No reports yet.</td></tr>`;return;}
+  tb.innerHTML=DB.reports.map(r=>`
+    <tr>
+      <td>${r.date}</td><td>${r.project}</td>
+      <td><span class="badge badge-blue">${r.type}</span></td>
+      <td>
+        <div class="progress" style="width:80px;display:inline-block;vertical-align:middle;margin-right:6px"><div class="progress-bar" style="width:${r.progress}%"></div></div>
+        ${r.progress}%
+      </td>
+      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.issues||'—'}</td>
+      <td>${r.createdBy||'—'}</td>
+      <td><button class="btn-icon" onclick="deleteReport(${r.id})"><i class="fas fa-trash"></i></button></td>
+    </tr>`).join('');
+}
+function openReportModal(){populateProjectDropdowns();setVal('rm_date',new Date().toISOString().slice(0,10));openModal('reportModal');}
+function saveReport(){
+  const r={id:Date.now(),date:getVal('rm_date'),project:getVal('rm_project'),type:getVal('rm_type'),progress:parseInt(getVal('rm_progress'))||0,done:getVal('rm_done'),issues:getVal('rm_issues'),createdBy:currentUser?.name};
+  if(!r.project){notify('Select a project','error');return;}
+  DB.reports.push(r);save();closeModal('reportModal');renderReports();notify('Report saved','success');
+}
+function deleteReport(id){if(!confirm('Delete?'))return;DB.reports=DB.reports.filter(x=>x.id!==id);save();renderReports();}
+
+// ══════════════════════════════════
+// INVENTORY
+// ══════════════════════════════════
+function renderInventory(){
+  const tb=document.getElementById('inventory-tbody');if(!tb)return;
+  if(DB.inventory.length===0){tb.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text3)">No inventory items yet.</td></tr>`;return;}
+  tb.innerHTML=DB.inventory.map(i=>{
+    const status=i.qty<=0?'Out of Stock':i.qty<=i.min?'Low Stock':'In Stock';
+    return`<tr>
+      <td><b>${i.name}</b></td>
+      <td><span class="badge badge-gray">${i.category}</span></td>
+      <td>${i.unit}</td>
+      <td style="text-align:right;color:${i.qty<=i.min?'#f39c12':''}">${i.qty}</td>
+      <td style="text-align:right">${i.min}</td>
+      <td style="text-align:right">${fmtCurrency(i.rate)}</td>
+      <td style="text-align:right">${fmtCurrency((i.qty||0)*(i.rate||0))}</td>
+      <td>${statusBadge(status)}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn-icon" onclick="editInventory(${i.id})" title="Edit"><i class="fas fa-edit"></i></button>
+        <button class="btn-icon" onclick="deleteInventory(${i.id})" title="Delete"><i class="fas fa-trash"></i></button>
+      </div></td>
+    </tr>`;}).join('');
+}
+function openInventoryModal(id){
+  editingId=id||null;
+  const i=id?DB.inventory.find(x=>x.id===id):null;
+  setVal('im_name',i?i.name:'');setVal('im_cat',i?i.category:'Material');
+  setVal('im_unit',i?i.unit:'Nos');setVal('im_qty',i?i.qty:0);
+  setVal('im_min',i?i.min:5);setVal('im_rate',i?i.rate:0);
+  setVal('im_loc',i?i.loc:'');
+  openModal('inventoryModal');
+}
+function editInventory(id){openInventoryModal(id);}
+function saveInventory(){
+  const it={id:editingId||Date.now(),name:getVal('im_name'),category:getVal('im_cat'),unit:getVal('im_unit'),qty:parseFloat(getVal('im_qty'))||0,min:parseFloat(getVal('im_min'))||5,rate:parseFloat(getVal('im_rate'))||0,loc:getVal('im_loc')};
+  if(!it.name){notify('Item name required','error');return;}
+  if(editingId){const i=DB.inventory.findIndex(x=>x.id===editingId);if(i>=0)DB.inventory[i]=it;}
+  else DB.inventory.push(it);
+  save();closeModal('inventoryModal');renderInventory();notify('Item saved','success');
+}
+function deleteInventory(id){if(!confirm('Delete?'))return;DB.inventory=DB.inventory.filter(x=>x.id!==id);save();renderInventory();}
+
+// ══════════════════════════════════
+// TRASH
+// ══════════════════════════════════
+function renderTrash(){
+  const tb=document.getElementById('trash-tbody');if(!tb)return;
+  if(DB.trash.length===0){tb.innerHTML=`<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--text3)"><i class="fas fa-trash" style="font-size:24px;display:block;margin-bottom:8px"></i>Trash is empty</td></tr>`;return;}
+  tb.innerHTML=DB.trash.map((t,i)=>`
+    <tr>
+      <td><span class="badge badge-gray">${t.type}</span></td>
+      <td>${t.name}</td>
+      <td>${t.deletedAt||'—'}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn btn-sm btn-outline" onclick="restoreTrash(${i})"><i class="fas fa-undo"></i> Restore</button>
+        <button class="btn btn-sm btn-danger" onclick="permDeleteTrash(${i})"><i class="fas fa-times"></i></button>
+      </div></td>
+    </tr>`).join('');
+}
+function restoreTrash(i){
+  const t=DB.trash[i];
+  if(t.type==='Project'){DB.projects.push(t.data);}
+  else if(['quotation','lpo','contract','delivery','invoice','ratelist'].includes(t.type)){DB.documents[t.type].push(t.data);}
+  DB.trash.splice(i,1);save();renderTrash();notify('Restored successfully','success');
+}
+function permDeleteTrash(i){if(!confirm('Permanently delete?'))return;DB.trash.splice(i,1);save();renderTrash();}
+function emptyTrash(){if(!confirm('Empty all trash? This cannot be undone.'))return;DB.trash=[];save();renderTrash();notify('Trash emptied','success');}
+
+// ══════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════
+function renderDashboard(){
+  const totalDocs=Object.values(DB.documents).reduce((s,a)=>s+a.length,0);
+  const totalProj=DB.projects.length;
+  const totalInv=DB.finance.filter(f=>f.type==='income').reduce((s,f)=>s+f.amount,0);
+  const totalExp=DB.finance.filter(f=>f.type==='expense').reduce((s,f)=>s+f.amount,0);
+  const el=document.getElementById('dashStats');
+  if(el)el.innerHTML=`
+    <div class="stat-card"><div class="stat-icon" style="background:rgba(139,105,20,0.15)"><i class="fas fa-file-alt" style="color:var(--gold)"></i></div><div class="stat-info"><div class="val">${totalDocs}</div><div class="lbl">Total Documents</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:rgba(52,152,219,0.15)"><i class="fas fa-project-diagram" style="color:#3498db"></i></div><div class="stat-info"><div class="val">${totalProj}</div><div class="lbl">Projects</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:rgba(46,204,113,0.15)"><i class="fas fa-users" style="color:#2ecc71"></i></div><div class="stat-info"><div class="val">${DB.employees.length}</div><div class="lbl">Employees</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:rgba(139,105,20,0.15)"><i class="fas fa-wallet" style="color:var(--gold)"></i></div><div class="stat-info"><div class="val" style="font-size:15px;color:${totalInv-totalExp>=0?'#2ecc71':'#e74c3c'}">${fmtCurrency(totalInv-totalExp)}</div><div class="lbl">Net Balance</div></div></div>`;
+  const drEl=document.getElementById('dashRecentDocs');
+  if(drEl){
+    const allDocs=Object.entries(DB.documents).flatMap(([type,arr])=>arr.map(d=>({...d,type}))).sort((a,b)=>b.id-a.id).slice(0,5);
+    if(allDocs.length===0){drEl.innerHTML='<p style="color:var(--text2);text-align:center;padding:20px">No documents yet</p>';return;}
+    drEl.innerHTML=allDocs.map(d=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><div><div style="font-weight:600;font-size:13px">${d.docNo}</div><div style="font-size:11px;color:var(--text2)">${d.party||'—'} · ${d.type.toUpperCase()}</div></div><div style="text-align:right"><div style="font-size:12px">${fmt(d.total||0)}</div>${statusBadge(d.status||'Draft')}</div></div>`).join('');
+  }
+  const dpEl=document.getElementById('dashProjects');
+  if(dpEl){
+    const projs=DB.projects.filter(p=>p.status!=='Completed').slice(0,5);
+    if(projs.length===0){dpEl.innerHTML='<p style="color:var(--text2);text-align:center;padding:20px">No active projects</p>';return;}
+    dpEl.innerHTML=projs.map(p=>`<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-weight:600;font-size:13px">${p.name}</span>${statusBadge(p.status)}</div><div class="progress"><div class="progress-bar" style="width:${p.progress||0}%"></div></div><div style="font-size:11px;color:var(--text2);margin-top:2px">${p.progress||0}% complete</div></div>`).join('');
+  }
+}
+
+// ══════════════════════════════════
+// EXPORT
+// ══════════════════════════════════
+function exportAllData(format){
+  if(format==='json'){
+    const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='DegraiAdmin_Backup.json';a.click();
+    notify('Backup downloaded','success');
+  } else {
+    let csv='Type,DocNo,Party,Project,Date,Amount,Status\n';
+    Object.entries(DB.documents).forEach(([type,arr])=>{
+      arr.forEach(d=>{csv+=`${type},${d.docNo||''},${d.party||''},${d.project||''},${d.date||''},${d.total||0},${d.status||''}\n`;});
+    });
+    const blob=new Blob([csv],{type:'text/csv'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='DegraiAdmin_Documents.csv';a.click();
+    notify('CSV exported','success');
+  }
+}
+
+// ══════════════════════════════════
+// MODALS
+// ══════════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
+
+// ══════════════════════════════════
+// NOTIFY
+// ══════════════════════════════════
+let notifTimer;
+function notify(msg,type='success'){
+  const n=document.getElementById('notif');
+  n.className='notif show '+(type||'success');
+  n.querySelector('i').className=type==='error'?'fas fa-exclamation-circle':'fas fa-check-circle';
+  document.getElementById('notifText').textContent=msg;
+  clearTimeout(notifTimer);
+  notifTimer=setTimeout(()=>n.classList.remove('show'),3200);
+}
+
+// ══════════════════════════════════
+// SETTINGS TOGGLES
+// ══════════════════════════════════
+function clearAllData(){
+  if(!confirm('⚠️ This will delete ALL data permanently. Type "DELETE" to confirm:'))return;
+  const conf=prompt('Type DELETE to confirm:');
+  if(conf!=='DELETE')return;
+  DB.documents={quotation:[],lpo:[],contract:[],delivery:[],invoice:[],ratelist:[]};
+  DB.projects=[];DB.procurement=[];DB.finance=[];DB.employees=[];
+  DB.attendance={};DB.reports=[];DB.inventory=[];DB.trash=[];
+  save();renderAll();notify('All data cleared','success');
+}
+
+// ══════════════════════════════════
+// TOGGLE HELPER
+// ══════════════════════════════════
+function togClick(el){
+  if(el.classList.contains('disabled'))return;
+  el.classList.toggle('on');
+}
+
+// ══════════════════════════════════
+// INIT
+// ══════════════════════════════════
+load();
+// set today's month for attendance
+const attMEl=document.getElementById('attMonth');
+if(attMEl)attMEl.value=new Date().toISOString().slice(0,7);
+</script>
+</body>
+</html>
