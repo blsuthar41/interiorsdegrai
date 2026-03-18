@@ -1115,7 +1115,11 @@ function load(){
 function startFirebaseListener(){
   if(_fbListenerActive)return;
   if(!window._firebaseReady){
-    window.addEventListener('firebaseReady',startFirebaseListener,{once:true});
+    // Module scripts run after inline scripts — wait for ready signal
+    window.addEventListener('firebaseReady',()=>startFirebaseListener(),{once:true});
+    // Also poll briefly in case event already fired
+    let _pollCount=0;
+    const _poll=setInterval(()=>{if(window._firebaseReady||++_pollCount>30){clearInterval(_poll);if(window._firebaseReady&&!_fbListenerActive)startFirebaseListener();}},200);
     return;
   }
   _fbListenerActive=true;
@@ -1131,7 +1135,10 @@ function startFirebaseListener(){
       DB.documents={...{quotation:[],lpo:[],contract:[],delivery:[],invoice:[],ratelist:[]},...(data.documents||{})};
       try{localStorage.setItem('degrai_admin',JSON.stringify(DB));}catch(e){}
       renderAll();
-      if(document.getElementById('app').style.display!=='none')navigate(document.querySelector('.sb-item.active')?.dataset?.page||'dashboard');
+      if(currentUser&&document.getElementById('app').style.display!=='none'){
+        const activePage=document.querySelector('.sb-item.active')?.dataset?.page||'dashboard';
+        navigate(activePage);
+      }
       setSyncStatus('synced');
     }
   },(err)=>{setSyncStatus('error');});
