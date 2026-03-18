@@ -1375,10 +1375,17 @@ function openDocModal(type,id){
   currentDocType=type;currentDocId=id||null;
   const titles={quotation:'Quotation',lpo:'Local Purchase Order',contract:'Contract',delivery:'Delivery Note',invoice:'Invoice',ratelist:'Rate List'};
   document.getElementById('docModalTitle').textContent=(id?'Edit ':'New ')+titles[type];
-  document.getElementById('docModalBody').innerHTML=buildDocForm(type,id?DB.documents[type].find(x=>x.id===id):null);
+  const existingDoc=id?DB.documents[type].find(x=>x.id===id):null;
+  document.getElementById('docModalBody').innerHTML=buildDocForm(type,existingDoc);
   openModal('docModal');
-  addItemRowInit();
-  if(id)populateDocForm(id);
+  if(id && existingDoc){
+    // Edit mode: populate all fields from saved doc (no blank row)
+    populateDocForm(id);
+  } else {
+    // New mode: just add one blank row
+    document.getElementById('itemsBody').innerHTML='';
+    addItemRow();
+  }
   recalcItems();
 }
 function buildDocForm(type,doc){
@@ -1427,7 +1434,7 @@ function buildDocForm(type,doc){
   </div>
   <div class="doc-total" id="docTotalBlock"></div>
   <div class="form-row cols-2" style="margin-top:8px">
-    <div class="field"><label>Tax % (${DB.settings.taxlabel||'GST'})</label><input type="number" id="d_tax" value="${DB.settings.taxrate||18}" oninput="recalcItems()"/></div>
+    <div class="field"><label>Tax % (${DB.settings.taxlabel||'GST'})</label><input type="number" id="d_tax" value="${doc?(doc.taxRate!==undefined?doc.taxRate:DB.settings.taxrate||18):DB.settings.taxrate||18}" oninput="recalcItems()"/></div>
     <div class="field"><label>Discount Amount</label><input type="number" id="d_discount" value="${doc?doc.discount||0:0}" oninput="recalcItems()"/></div>
   </div>
   <div class="form-row">
@@ -1456,9 +1463,12 @@ function recalcItems(){
   const rows=[...document.querySelectorAll('#itemsBody tr')];
   let subtotal=0;
   rows.forEach(r=>{
-    const inputs=r.querySelectorAll('input[type=number]');
-    const qty=parseFloat(inputs[0]?.value)||0;
-    const rate=parseFloat(inputs[1]?.value)||0;
+    // number inputs: for ratelist rows = [qty, rate], for normal rows = [qty, rate]
+    // But ratelist has an extra <select> for category before the unit select
+    // So we target number inputs specifically by position
+    const numInputs=r.querySelectorAll('input[type=number]');
+    const qty=parseFloat(numInputs[0]?.value)||0;
+    const rate=parseFloat(numInputs[1]?.value)||0;
     const amt=qty*rate;
     subtotal+=amt;
     const cell=r.querySelector('.amt-cell');
@@ -1466,46 +1476,65 @@ function recalcItems(){
   });
   const taxRate=parseFloat(document.getElementById('d_tax')?.value)||0;
   const discount=parseFloat(document.getElementById('d_discount')?.value)||0;
-  const taxAmt=(subtotal-discount)*taxRate/100;
-  const total=subtotal-discount+taxAmt;
+  const discountedSubtotal=Math.max(0, subtotal-discount);
+  const taxAmt=discountedSubtotal*taxRate/100;
+  const total=discountedSubtotal+taxAmt;
   const bl=document.getElementById('docTotalBlock');
   if(bl) bl.innerHTML=`
-    <table style="margin-left:auto;border-collapse:collapse;min-width:240px">
-      <tr><td style="padding:3px 8px;color:var(--text2);text-align:right">Subtotal</td><td style="padding:3px 8px;text-align:right;min-width:100px">${fmt(subtotal)}</td></tr>
-      ${discount>0?`<tr><td style="padding:3px 8px;color:var(--text2);text-align:right">Discount</td><td style="padding:3px 8px;text-align:right;color:#e74c3c">- ${fmt(discount)}</td></tr>`:''}
-      ${taxRate>0?`<tr><td style="padding:3px 8px;color:var(--text2);text-align:right">${DB.settings.taxlabel||'GST'} (${taxRate}%)</td><td style="padding:3px 8px;text-align:right">${fmt(taxAmt)}</td></tr>`:''}
-      <tr style="border-top:2px solid var(--border2)"><td style="padding:6px 8px;font-weight:700;font-size:14px;text-align:right">TOTAL</td><td style="padding:6px 8px;font-weight:700;font-size:15px;color:var(--gl);text-align:right">${fmt(total)}</td></tr>
+    <table style="margin-left:auto;border-collapse:collapse;min-width:260px">
+      <tr><td style="padding:4px 12px;color:var(--text2);text-align:right;font-size:13px">Subtotal</td><td style="padding:4px 12px;text-align:right;min-width:110px;font-size:13px">${fmtCurrency(subtotal)}</td></tr>
+      ${discount>0?`<tr><td style="padding:4px 12px;color:var(--text2);text-align:right;font-size:13px">Discount</td><td style="padding:4px 12px;text-align:right;color:#e74c3c;font-size:13px">− ${fmtCurrency(discount)}</td></tr>`:''}
+      ${taxRate>0?`<tr><td style="padding:4px 12px;color:var(--text2);text-align:right;font-size:13px">${DB.settings.taxlabel||'GST'} (${taxRate}%)</td><td style="padding:4px 12px;text-align:right;font-size:13px">${fmtCurrency(taxAmt)}</td></tr>`:''}
+      <tr style="border-top:2px solid var(--border2)"><td style="padding:8px 12px;font-weight:700;font-size:14px;text-align:right">TOTAL</td><td style="padding:8px 12px;font-weight:700;font-size:16px;color:var(--gl);text-align:right">${fmtCurrency(total)}</td></tr>
     </table>`;
 }
 function getDocItems(){
   return [...document.querySelectorAll('#itemsBody tr')].map(r=>{
-    const inputs=r.querySelectorAll('input');
-    const sel=r.querySelectorAll('select');
+    const textInputs=r.querySelectorAll('input[type=text],input:not([type])');
+    const numInputs=r.querySelectorAll('input[type=number]');
+    const selects=r.querySelectorAll('select');
     const isRL=currentDocType==='ratelist';
-    const desc=inputs[0]?.value||'';
-    const cat=isRL?(sel[0]?.value||'Labour'):'';
-    const unit=sel[isRL?1:0]?.value||'Nos';
-    const qty=parseFloat(inputs[isRL?1:1]?.value)||0;
-    const rate=parseFloat(inputs[isRL?2:2]?.value)||0;
+    const desc=textInputs[0]?.value||'';
+    // Rate List: selects = [category, unit]; Normal: selects = [unit]
+    const cat=isRL?(selects[0]?.value||'Labour'):'';
+    const unit=selects[isRL?1:0]?.value||'Nos';
+    // number inputs are always [qty, rate] regardless of doc type
+    const qty=parseFloat(numInputs[0]?.value)||0;
+    const rate=parseFloat(numInputs[1]?.value)||0;
     return{desc,cat,unit,qty,rate,amount:qty*rate};
-  }).filter(i=>i.desc);
+  }).filter(i=>i.desc.trim());
 }
 function populateDocForm(id){
   const doc=DB.documents[currentDocType].find(x=>x.id===id);
   if(!doc)return;
-  document.getElementById('d_status').value=doc.status||'Draft';
-  // items
+  // Restore all header fields
+  setVal('d_status', doc.status||'Draft');
+  setVal('d_party',  doc.party||'');
+  setVal('d_partyContact', doc.partyContact||'');
+  setVal('d_project', doc.project||'');
+  setVal('d_ref',    doc.ref||'');
+  setVal('d_location', doc.location||'');
+  setVal('d_valid',  doc.valid||'');
+  setVal('d_duedate', doc.duedate||'');
+  setVal('d_deldate', doc.deldate||'');
+  setVal('d_notes',  doc.notes||'');
+  setVal('d_tax',    doc.taxRate!==undefined ? doc.taxRate : (DB.settings.taxrate||18));
+  setVal('d_discount', doc.discount||0);
+  if(doc.rltype) setVal('d_rltype', doc.rltype);
+  // Restore line items (no blank row — openDocModal skips addItemRow in edit mode)
   document.getElementById('itemsBody').innerHTML='';
-  (doc.items||[]).forEach(i=>addItemRow(i.desc,i.unit,i.qty,i.rate,i.cat));
+  (doc.items||[]).forEach(i=>addItemRow(i.desc, i.unit, i.qty, i.rate, i.cat));
   recalcItems();
 }
 function saveDoc(draft=false){
   const items=getDocItems();
+  if(items.length===0){notify('Add at least one line item','error');return;}
   const subtotal=items.reduce((s,i)=>s+i.amount,0);
   const discount=parseFloat(document.getElementById('d_discount')?.value)||0;
   const taxRate=parseFloat(document.getElementById('d_tax')?.value)||0;
-  const taxAmt=(subtotal-discount)*taxRate/100;
-  const total=subtotal-discount+taxAmt;
+  const discountedSubtotal=Math.max(0,subtotal-discount);
+  const taxAmt=discountedSubtotal*taxRate/100;
+  const total=discountedSubtotal+taxAmt;
   const doc={
     id:currentDocId||Date.now(),
     docNo:getVal('d_no'),date:getVal('d_date'),status:getVal('d_status'),
@@ -1521,7 +1550,8 @@ function saveDoc(draft=false){
   const arr=DB.documents[currentDocType];
   if(currentDocId){const idx=arr.findIndex(x=>x.id===currentDocId);if(idx>=0)arr[idx]=doc;}
   else arr.push(doc);
-  save();renderDocsTable(currentDocType);
+  save();
+  renderDocsTable(currentDocType);
   notify('Document saved','success');
   if(draft)closeModal('docModal');
 }
@@ -1532,11 +1562,13 @@ function saveDoc(draft=false){
 function generatePDF(){
   saveDoc(false);
   const items=getDocItems();
+  if(!items.length){notify('Add line items first','error');return;}
   const subtotal=items.reduce((s,i)=>s+i.amount,0);
   const discount=parseFloat(document.getElementById('d_discount')?.value)||0;
   const taxRate=parseFloat(document.getElementById('d_tax')?.value)||0;
-  const taxAmt=(subtotal-discount)*taxRate/100;
-  const total=subtotal-discount+taxAmt;
+  const discountedSubtotal=Math.max(0,subtotal-discount);
+  const taxAmt=discountedSubtotal*taxRate/100;
+  const total=discountedSubtotal+taxAmt;
   const data={
     docNo:getVal('d_no'),date:getVal('d_date'),status:getVal('d_status'),
     party:getVal('d_party'),partyContact:getVal('d_partyContact'),
@@ -1695,11 +1727,11 @@ function buildPDF(type,data){
   // Amount col = colWidths[5]=27mm, ends at W-mr=195mm
   // Totals box = 54mm wide: label(30) + value(24), right-edge flush with table
   if(!isRL){
-    const tw=54,lw=30,tx=W-mr-tw; // right-flush with table edge
-    const rows=[['Subtotal',fmt(data.subtotal)]];
-    if(data.discount>0)rows.push(['Discount','- '+fmt(data.discount)]);
-    if(data.taxRate>0)rows.push([(s.taxlabel||'GST')+' ('+data.taxRate+'%)',fmt(data.taxAmt)]);
-    rows.push(['TOTAL',fmt(data.total)]);
+    const tw=64,tx=W-mr-tw; // right-flush with table edge
+    const rows=[['Subtotal',fmtCurrency(data.subtotal)]];
+    if(data.discount>0)rows.push(['Discount','− '+fmtCurrency(data.discount)]);
+    if(data.taxRate>0)rows.push([(s.taxlabel||'GST')+' ('+data.taxRate+'%)',fmtCurrency(data.taxAmt)]);
+    rows.push(['TOTAL',fmtCurrency(data.total)]);
     rows.forEach((r,i)=>{
       const isTotal=i===rows.length-1;
       const rowH=isTotal?8.5:7;
