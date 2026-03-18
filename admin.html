@@ -5,33 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Degrai Interiors — Admin Panel</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
-  import { getDatabase, ref, set, onValue, get, child } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
-  const firebaseConfig = {
-    apiKey: "AIzaSyDVlj2CLhLrlm_80RJJ-IZARLeNKMM0POs",
-    authDomain: "degrai.firebaseapp.com",
-    projectId: "degrai",
-    databaseURL: "https://degrai-default-rtdb.firebaseio.com",
-    storageBucket: "degrai.firebasestorage.app",
-    messagingSenderId: "294816807066",
-    appId: "1:294816807066:web:908a107fbc842306d58723",
-    measurementId: "G-4LWJJQM1Q4"
-  };
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  const database = getDatabase(app);
-  window._firebaseDB = database;
-  window._firebaseRef = ref;
-  window._firebaseSet = set;
-  window._firebaseOnValue = onValue;
-  window._firebaseGet = get;
-  window._firebaseChild = child;
-  window._firebaseReady = true;
-  window.dispatchEvent(new Event('firebaseReady'));
-</script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
@@ -1048,7 +1022,31 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   <span id="notifText">Saved successfully</span>
 </div>
 
-<script>
+<script type="module">
+// ══════════════════════════════════════════════════════════════════
+// FIREBASE FIRESTORE — IMPORTS (all in one module, no bridge needed)
+// ══════════════════════════════════════════════════════════════════
+import { initializeApp }          from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getAnalytics }           from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
+import {
+  getFirestore, doc, setDoc, onSnapshot, getDoc
+} from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyDVlj2CLhLrlm_80RJJ-IZARLeNKMM0POs",
+  authDomain:        "degrai.firebaseapp.com",
+  projectId:         "degrai",
+  storageBucket:     "degrai.firebasestorage.app",
+  messagingSenderId: "294816807066",
+  appId:             "1:294816807066:web:908a107fbc842306d58723",
+  measurementId:     "G-4LWJJQM1Q4"
+};
+
+const _app  = initializeApp(firebaseConfig);
+getAnalytics(_app);
+const _db   = getFirestore(_app);
+const _docRef = doc(_db, "degrai_admin", "data");
+
 // ══════════════════════════════════
 // STATE
 // ══════════════════════════════════
@@ -1075,73 +1073,107 @@ let currentDocId=null;
 let editingId=null;
 
 // ══════════════════════════════════
-// FIREBASE REALTIME SYNC
+// SYNC STATUS UI
 // ══════════════════════════════════
-let _fbSaveTimer=null;
-let _fbListenerActive=false;
-let _ignoreNextSnapshot=false;
-
 function setSyncStatus(s){
   const dot=document.getElementById('syncDot');
   const lbl=document.getElementById('syncLabel');
   if(!dot||!lbl)return;
   dot.className=s==='syncing'?'syncing':s==='error'?'error':'';
-  lbl.textContent=s==='syncing'?'Saving…':s==='error'?'Offline':s==='listening'?'Live':'Synced';
+  lbl.textContent=s==='syncing'?'Saving…':s==='error'?'Offline':'Live ✓';
 }
+
+// ══════════════════════════════════
+// FIRESTORE SAVE  (debounced 500ms)
+// ══════════════════════════════════
+let _saveTimer=null;
+let _isSaving=false;
 
 function save(){
-  // Also persist locally as fallback
+  // Immediate localStorage backup
   try{localStorage.setItem('degrai_admin',JSON.stringify(DB));}catch(e){}
-  // Firebase write (debounced 400ms)
-  clearTimeout(_fbSaveTimer);
+  // Debounced Firestore write
+  clearTimeout(_saveTimer);
   setSyncStatus('syncing');
-  _fbSaveTimer=setTimeout(()=>{
-    if(!window._firebaseReady){setSyncStatus('error');return;}
-    _ignoreNextSnapshot=true;
-    const db=window._firebaseDB;
-    const r=window._firebaseRef;
-    const setFn=window._firebaseSet;
-    setFn(r(db,'degrai_admin'),DB)
-      .then(()=>{setSyncStatus('synced');})
-      .catch(()=>{setSyncStatus('error');});
-  },400);
+  _saveTimer=setTimeout(async()=>{
+    try{
+      _isSaving=true;
+      // Firestore cannot store undefined — sanitise
+      const clean=JSON.parse(JSON.stringify(DB));
+      await setDoc(_docRef, clean);
+      setSyncStatus('synced');
+    }catch(err){
+      console.error('Firestore save error:',err);
+      setSyncStatus('error');
+    }finally{
+      _isSaving=false;
+    }
+  },500);
 }
 
+// ══════════════════════════════════
+// LOAD (localStorage fast-boot)
+// ══════════════════════════════════
 function load(){
-  // Load from localStorage immediately for fast render
-  try{const d=localStorage.getItem('degrai_admin');if(d){const p=JSON.parse(d);DB={...DB,...p};DB.documents={...{quotation:[],lpo:[],contract:[],delivery:[],invoice:[],ratelist:[]},...(p.documents||{})};}}catch(e){}
+  try{
+    const d=localStorage.getItem('degrai_admin');
+    if(d){
+      const p=JSON.parse(d);
+      DB={...DB,...p};
+      DB.documents={...{quotation:[],lpo:[],contract:[],delivery:[],invoice:[],ratelist:[]},...(p.documents||{})};
+    }
+  }catch(e){}
 }
 
-function startFirebaseListener(){
-  if(_fbListenerActive)return;
-  if(!window._firebaseReady){
-    // Module scripts run after inline scripts — wait for ready signal
-    window.addEventListener('firebaseReady',()=>startFirebaseListener(),{once:true});
-    // Also poll briefly in case event already fired
-    let _pollCount=0;
-    const _poll=setInterval(()=>{if(window._firebaseReady||++_pollCount>30){clearInterval(_poll);if(window._firebaseReady&&!_fbListenerActive)startFirebaseListener();}},200);
-    return;
-  }
-  _fbListenerActive=true;
-  const db=window._firebaseDB;
-  const r=window._firebaseRef;
-  const onVal=window._firebaseOnValue;
-  setSyncStatus('listening');
-  onVal(r(db,'degrai_admin'),(snapshot)=>{
-    if(_ignoreNextSnapshot){_ignoreNextSnapshot=false;setSyncStatus('synced');return;}
-    const data=snapshot.val();
-    if(data){
+// ══════════════════════════════════
+// FIRESTORE REALTIME LISTENER
+// Every write from any device triggers
+// this on ALL other open sessions.
+// ══════════════════════════════════
+function startFirestoreListener(){
+  onSnapshot(_docRef,(snapshot)=>{
+    if(_isSaving) return; // skip echo of our own write
+    if(!snapshot.exists()) return;
+    const data=snapshot.data();
+    if(!data) return;
+    // Merge remote data into DB
+    DB={...DB,...data};
+    DB.documents={...{quotation:[],lpo:[],contract:[],delivery:[],invoice:[],ratelist:[]},...(data.documents||{})};
+    // Persist locally too
+    try{localStorage.setItem('degrai_admin',JSON.stringify(DB));}catch(e){}
+    // Re-render UI if logged in
+    if(currentUser){
+      renderAll();
+      const pg=document.querySelector('.sb-item.active')?.dataset?.page||'dashboard';
+      renderPage(pg);
+    }
+    setSyncStatus('synced');
+  },(err)=>{
+    console.error('Firestore listener error:',err);
+    setSyncStatus('error');
+  });
+}
+
+// ══════════════════════════════════
+// FIRST-TIME: pull latest from
+// Firestore before showing UI
+// ══════════════════════════════════
+async function initFromFirestore(){
+  try{
+    setSyncStatus('syncing');
+    const snap=await getDoc(_docRef);
+    if(snap.exists()){
+      const data=snap.data();
       DB={...DB,...data};
       DB.documents={...{quotation:[],lpo:[],contract:[],delivery:[],invoice:[],ratelist:[]},...(data.documents||{})};
       try{localStorage.setItem('degrai_admin',JSON.stringify(DB));}catch(e){}
-      renderAll();
-      if(currentUser&&document.getElementById('app').style.display!=='none'){
-        const activePage=document.querySelector('.sb-item.active')?.dataset?.page||'dashboard';
-        navigate(activePage);
-      }
-      setSyncStatus('synced');
     }
-  },(err)=>{setSyncStatus('error');});
+    setSyncStatus('synced');
+  }catch(err){
+    console.warn('Could not fetch from Firestore on init:',err);
+    setSyncStatus('error');
+  }
+  startFirestoreListener();
 }
 
 // ══════════════════════════════════
@@ -1164,7 +1196,6 @@ function doLogin(){
   renderAll();
   navigate('dashboard');
 }
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none')doLogin();});
 function doLogout(){currentUser=null;document.getElementById('loginScreen').style.display='flex';document.getElementById('app').style.display='none';document.getElementById('loginUser').value='';document.getElementById('loginPass').value='';}
 function roleLabel(r){return{admin:'Administrator',manager:'Manager',accountant:'Accountant',viewer:'Viewer'}[r]||r;}
 
@@ -1184,7 +1215,9 @@ function navigate(pg){
   closeMobile();
   renderPage(pg);
 }
-document.querySelectorAll('.sb-item[data-page]').forEach(el=>{el.addEventListener('click',()=>navigate(el.dataset.page));});
+// ══════════════════════════════════
+// SIDEBAR TOGGLE
+// ══════════════════════════════════
 function renderPage(pg){
   if(pg==='dashboard')renderDashboard();
   else if(['quotation','lpo','contract','delivery','invoice','ratelist'].includes(pg))renderDocsTable(pg);
@@ -1200,9 +1233,6 @@ function renderPage(pg){
 }
 function renderAll(){['quotation','lpo','contract','delivery','invoice','ratelist','projects','procurement','finance','salary','attendance','reports','inventory'].forEach(renderPage);}
 
-// ══════════════════════════════════
-// SIDEBAR TOGGLE
-// ══════════════════════════════════
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('collapsed');}
 function toggleMobile(){
   const sb=document.getElementById('sidebar');
@@ -1218,13 +1248,6 @@ function closeMobile(){
 // ══════════════════════════════════
 // SETTINGS
 // ══════════════════════════════════
-document.querySelectorAll('.tab').forEach(t=>{
-  t.addEventListener('click',()=>{
-    const tab=t.dataset.tab;
-    t.closest('.page').querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));
-    t.closest('.page').querySelectorAll('.tab-content').forEach(x=>x.classList.toggle('active',x.dataset.tabContent===tab));
-  });
-});
 function loadSettings(){
   const s=DB.settings;
   setVal('s_name',s.name);setVal('s_tagline',s.tagline);setVal('s_phone',s.phone);
@@ -2068,7 +2091,6 @@ function renderAttendance(){
     attSum.innerHTML=rows||'<p style="color:var(--text2);text-align:center;padding:20px">No data</p>';
   }
 }
-document.getElementById('attMonth')?.addEventListener('change',renderAttendance);
 function saveAtt(key,field,val){if(!DB.attendance[key])DB.attendance[key]={present:0,absent:0,half:0};DB.attendance[key][field]=parseInt(val)||0;save();}
 
 // ══════════════════════════════════
@@ -2218,7 +2240,6 @@ function exportAllData(format){
 // ══════════════════════════════════
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
 
 // ══════════════════════════════════
 // NOTIFY
@@ -2278,14 +2299,66 @@ function applyStoredTheme(){
 }
 
 // ══════════════════════════════════
+// EXPOSE FUNCTIONS NEEDED BY HTML
+// onclick="..." attributes need these
+// in global scope when using modules
+// ══════════════════════════════════
+window.doLogin=doLogin; window.doLogout=doLogout;
+window.navigate=navigate; window.toggleSidebar=toggleSidebar;
+window.toggleMobile=toggleMobile; window.closeMobile=closeMobile;
+window.openModal=openModal; window.closeModal=closeModal;
+window.openDocModal=openDocModal; window.saveDoc=saveDoc;
+window.generatePDF=generatePDF; window.regenPDF=regenPDF;
+window.deleteDoc=deleteDoc; window.filterDocs=filterDocs;
+window.addItemRow=addItemRow; window.recalcItems=recalcItems;
+window.openProjectModal=openProjectModal; window.saveProject=saveProject;
+window.editProject=editProject; window.deleteProject=deleteProject;
+window.openProcurementModal=openProcurementModal; window.saveProcurement=saveProcurement;
+window.updateProcStatus=updateProcStatus; window.deleteProcurement=deleteProcurement;
+window.openFinanceModal=openFinanceModal; window.saveFinance=saveFinance;
+window.deleteFinance=deleteFinance; window.exportFinance=exportFinance;
+window.openEmployeeModal=openEmployeeModal; window.saveEmployee=saveEmployee;
+window.editEmployee=editEmployee; window.deleteEmployee=deleteEmployee;
+window.generatePayroll=generatePayroll; window.genSalarySlip=genSalarySlip;
+window.saveAtt=saveAtt;
+window.openReportModal=openReportModal; window.saveReport=saveReport;
+window.deleteReport=deleteReport;
+window.openInventoryModal=openInventoryModal; window.saveInventory=saveInventory;
+window.editInventory=editInventory; window.deleteInventory=deleteInventory;
+window.openUserModal=openUserModal; window.saveUser=saveUser;
+window.editUser=editUser; window.deleteUser=deleteUser;
+window.saveCompanySettings=saveCompanySettings; window.saveDocSettings=saveDocSettings;
+window.uploadLogo=uploadLogo; window.restoreTrash=restoreTrash;
+window.permDeleteTrash=permDeleteTrash; window.emptyTrash=emptyTrash;
+window.exportAllData=exportAllData; window.clearAllData=clearAllData;
+window.togClick=togClick; window.toggleTheme=toggleTheme;
+
+// ══════════════════════════════════
 // INIT
 // ══════════════════════════════════
-load();
+load();           // fast local boot
 applyStoredTheme();
-startFirebaseListener();
-// set today's month for attendance
+// Tabs (settings page)
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    const tab=t.dataset.tab;
+    t.closest('.page').querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));
+    t.closest('.page').querySelectorAll('.tab-content').forEach(x=>x.classList.toggle('active',x.dataset.tabContent===tab));
+  });
+});
+// Sidebar nav
+document.querySelectorAll('.sb-item[data-page]').forEach(el=>{el.addEventListener('click',()=>navigate(el.dataset.page));});
+// Modal close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
+// Enter key on login
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none')doLogin();});
+// Attendance month change
+document.getElementById('attMonth')?.addEventListener('change',renderAttendance);
+// Set today's month
 const attMEl=document.getElementById('attMonth');
 if(attMEl)attMEl.value=new Date().toISOString().slice(0,7);
+// Pull latest from Firestore then start realtime listener
+initFromFirestore();
 </script>
 </body>
 </html>
